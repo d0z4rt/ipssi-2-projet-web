@@ -4,13 +4,11 @@
 Table tags {
   id UUID [pk]
   name VARCHAR(255)
-  created_at TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
 }
 
 Table categories {
   id UUID [pk]
   name VARCHAR(255)
-  created_at TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
 }
 
 Table games {
@@ -19,7 +17,9 @@ Table games {
   description TEXT
   cover_image VARCHAR(255)
   banner_image VARCHAR(255)
+  platforms VARCHAR(255)[]
   released_at TIMESTAMPTZ
+  developer VARCHAR(255)
   created_at TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
 }
 
