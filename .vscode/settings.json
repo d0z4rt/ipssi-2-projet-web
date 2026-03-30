@@ -1,0 +1,45 @@
+{
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "editor.renderWhitespace": "all",
+  "telemetry.feedback.enabled": false,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "npm.packageManager": "pnpm",
+  "explorer.excludeGitIgnore": false,
+  "workbench.localHistory.exclude": {
+    "**/.output/**": true,
+    "**/.vinxi/**": true,
+    "**/target/**": true,
+    "**/.nx/**": true,
+    "**/dist/**": true,
+    "**/node_modules/**": true
+  },
+  "explorer.autoRevealExclude": {
+    "**/.output/**": true,
+    "**/.vinxi/**": true,
+    "**/target/**": true,
+    "**/.nx/**": true,
+    "**/dist/**": true,
+    "**/node_modules/**": true
+  },
+  "files.watcherExclude": {
+    "**/.output/**": true,
+    "**/.vinxi/**": true,
+    "**/target/**": true,
+    "**/.nx/**": true,
+    "**/dist/**": true,
+    "**/node_modules/**": true
+  },
+  "search.followSymlinks": false,
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact"
+  },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "oxc.fixKind": "safe_fix_or_suggestion",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "always"
+  },
+  "editor.bracketPairColorization.enabled": true
+}

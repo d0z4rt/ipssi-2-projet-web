@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "aaron-bond.better-comments",
+    "humao.rest-client",
+    "yoavbls.pretty-ts-errors",
+    "oxc.oxc-vscode"
+  ]
+}

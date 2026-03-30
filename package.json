@@ -1,0 +1,32 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel dev",
+    "build": "pnpm --parallel build",
+    "start": "pnpm --parallel start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "oxlint && oxfmt",
+    "format": "oxfmt",
+    "lint": "oxlint --fix --fix-suggestions",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@commitlint/types": "^19.8.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "oxfmt": "^0.23.0",
+    "oxlint": "^1.38.0"
+  },
+  "lint-staged": {
+    "**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,astro,svelte}": "oxlint",
+    "*": "oxfmt --no-error-on-unmatched-pattern"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.11.0"
+}
