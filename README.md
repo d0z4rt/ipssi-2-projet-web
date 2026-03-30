@@ -10,7 +10,7 @@
 
 ## Installation
 
-Install [pnpm](https://pnpm.io/)
+Install [pnpm](https://pnpm.io/) and Docker
 
 ### Dependencies
 
@@ -18,7 +18,22 @@ Install [pnpm](https://pnpm.io/)
 pnpm i
 ```
 
+### Environment variables
+
+```sh
+cp .env.example .env
+cp ./apps/api/.env.example ./apps/api/.env
+```
+
 ## Development
+
+Start the database with docker:
+
+```sh
+pnpm docker
+```
+
+Start the api and client in parallel:
 
 ```sh
 pnpm dev
