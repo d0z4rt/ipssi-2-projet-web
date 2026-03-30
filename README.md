@@ -39,6 +39,24 @@ Start the api and client in parallel:
 pnpm dev
 ```
 
+### Client only
+
+```sh
+pnpm --filter client dev
+```
+
+### Api only
+
+Running the api require an instance of Postgres, the easiest is to run it using docker.
+
+```sh
+pnpm docker
+```
+
+```sh
+pnpm --filter api dev
+```
+
 ## Build
 
 ```sh
