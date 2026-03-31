@@ -178,10 +178,6 @@ export const Home: React.FC = () => {
             <div
               ref={trendingRef}
               className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
-              }}
             >
               {trendingGames.map((game) => (
                 <div key={game.id} className="snap-start">
@@ -228,10 +224,6 @@ export const Home: React.FC = () => {
             <div
               ref={releasesRef}
               className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
-              }}
             >
               {latestReleases.map((game) => (
                 <div key={game.id} className="snap-start">
@@ -272,10 +264,6 @@ export const Home: React.FC = () => {
             <div
               ref={reviewsRef}
               className="flex gap-6 overflow-x-auto pb-4 snap-x scrollbar-hide"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
-              }}
             >
               {popularReviews.map((review) => (
                 <div key={review.id} className="snap-start w-[400px] shrink-0">

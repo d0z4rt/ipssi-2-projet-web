@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Filter, X } from 'lucide-react'
+import { Search, Filter, X, Gamepad2 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
 import { GameCard } from '../components/GameCard'
@@ -110,6 +110,8 @@ export const Games: React.FC = () => {
           {/* Desktop Filters */}
           <div className="hidden md:flex gap-4">
             <select
+              title="Filtrer par genre"
+              aria-label="Filtrer par genre"
               className="block w-40 pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-lg bg-darkBg text-gray-300 border"
               value={selectedGenre}
               onChange={(e) => setSelectedGenre(e.target.value)}
@@ -123,6 +125,8 @@ export const Games: React.FC = () => {
             </select>
 
             <select
+              title="Filtrer par plateforme"
+              aria-label="Filtrer par plateforme"
               className="block w-40 pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-lg bg-darkBg text-gray-300 border"
               value={selectedPlatform}
               onChange={(e) => setSelectedPlatform(e.target.value)}
@@ -136,6 +140,8 @@ export const Games: React.FC = () => {
             </select>
 
             <select
+              title="Filtrer par note minimale"
+              aria-label="Filtrer par note minimale"
               className="block w-40 pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-lg bg-darkBg text-gray-300 border"
               value={minRating}
               onChange={(e) => setMinRating(Number(e.target.value))}
@@ -178,6 +184,8 @@ export const Games: React.FC = () => {
             >
               <div className="pt-4 mt-4 border-t border-gray-800 flex flex-col gap-3">
                 <select
+                  title="Filtrer mobile par genre"
+                  aria-label="Filtrer mobile par genre"
                   className="block w-full pl-3 pr-10 py-3 text-base border-gray-700 rounded-lg bg-darkBg text-gray-300 border"
                   value={selectedGenre}
                   onChange={(e) => setSelectedGenre(e.target.value)}
@@ -191,6 +199,8 @@ export const Games: React.FC = () => {
                 </select>
 
                 <select
+                  title="Filtrer mobile par plateforme"
+                  aria-label="Filtrer mobile par plateforme"
                   className="block w-full pl-3 pr-10 py-3 text-base border-gray-700 rounded-lg bg-darkBg text-gray-300 border"
                   value={selectedPlatform}
                   onChange={(e) => setSelectedPlatform(e.target.value)}
@@ -204,6 +214,8 @@ export const Games: React.FC = () => {
                 </select>
 
                 <select
+                  title="Filtrer mobile par note minimale"
+                  aria-label="Filtrer mobile par note minimale"
                   className="block w-full pl-3 pr-10 py-3 text-base border-gray-700 rounded-lg bg-darkBg text-gray-300 border"
                   value={minRating}
                   onChange={(e) => setMinRating(Number(e.target.value))}
