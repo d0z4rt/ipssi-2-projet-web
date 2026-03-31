@@ -3,7 +3,7 @@ import { Heart, MessageSquare } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Review, reviewService } from '../services/api'
+import { Review, getGameSlugById, reviewService } from '../services/api'
 import { getRatingColor } from './GameCard'
 interface ReviewCardProps {
   review: Review
@@ -71,7 +71,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
             />
           )}
           <Link
-            to={`/games/${localReview.gameId}`}
+            to={`/games/${getGameSlugById(localReview.gameId) || localReview.gameId}`}
             className="font-medium text-white hover:text-blue-400 transition-colors"
           >
             {localReview.gameTitle}

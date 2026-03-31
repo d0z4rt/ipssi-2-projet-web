@@ -22,7 +22,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       }}
       className="group relative flex flex-col h-full w-full max-w-[200px] shrink-0"
     >
-      <Link to={`/games/${game.id}`} className="block flex-grow flex flex-col">
+      <Link to={`/games/${game.slug}`} className="flex-grow flex flex-col">
         {/* Image Section - Portrait */}
         <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-gray-900 border border-gray-800 mb-3 shadow-lg group-hover:border-gray-600 transition-colors">
           <img

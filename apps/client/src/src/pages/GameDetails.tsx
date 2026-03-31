@@ -1,29 +1,31 @@
 import { Check, Heart, Bookmark, ListPlus, Play, BarChart2 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 import { getRatingColor } from '../components/GameCard'
 import { ReviewCard } from '../components/ReviewCard'
-import { useAuth } from '../context/AuthContext'
 import { Game, Review, gameService, reviewService } from '../services/api'
 export const GameDetails: React.FC = () => {
-  const { id } = useParams<{
-    id: string
+  const { slug } = useParams<{
+    slug: string
   }>()
-  const { isAuthenticated, user } = useAuth()
   const [game, setGame] = useState<Game | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   useEffect(() => {
     const fetchGameData = async () => {
-      if (!id) return
+      if (!slug) return
       try {
         setLoading(true)
-        const [gameData, reviewsData] = await Promise.all([
-          gameService.getGameById(id),
-          reviewService.getReviewsByGame(id)
-        ])
-        if (gameData) setGame(gameData)
+        const gameData = await gameService.getGameBySlug(slug)
+        if (!gameData) {
+          setGame(null)
+          setReviews([])
+          return
+        }
+
+        const reviewsData = await reviewService.getReviewsByGame(gameData.id)
+        setGame(gameData)
         setReviews(reviewsData)
       } catch (error) {
         console.error('Failed to fetch game details', error)
@@ -32,7 +34,7 @@ export const GameDetails: React.FC = () => {
       }
     }
     fetchGameData()
-  }, [id])
+  }, [slug])
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-darkBg">
@@ -47,6 +49,16 @@ export const GameDetails: React.FC = () => {
     month: 'long',
     year: 'numeric'
   }).format(new Date(game.releaseDate))
+  const galleryImages =
+    game.screenshots && game.screenshots.length > 0
+      ? game.screenshots
+      : [game.bannerImage || game.image]
+  const trailerPreview = galleryImages[0] || game.bannerImage || game.image
+  const handleImageFallback = (
+    event: React.SyntheticEvent<HTMLImageElement>
+  ) => {
+    event.currentTarget.src = game.image
+  }
   return (
     <div className="min-h-screen bg-darkBg pb-20">
       {/* Hero Banner Area */}
@@ -55,6 +67,7 @@ export const GameDetails: React.FC = () => {
           <img
             src={game.bannerImage || game.image}
             alt={game.title}
+            onError={handleImageFallback}
             className="w-full h-full object-cover opacity-30 blur-sm"
           />
 
@@ -69,6 +82,7 @@ export const GameDetails: React.FC = () => {
               <img
                 src={game.image}
                 alt={game.title}
+                onError={handleImageFallback}
                 className="w-full h-auto object-cover aspect-[2/3]"
               />
             </div>
@@ -103,7 +117,11 @@ export const GameDetails: React.FC = () => {
                   <span className="flex items-center gap-1">
                     <Bookmark className="w-4 h-4" /> 9
                   </span>
-                  <button className="p-2 border border-gray-700 rounded-full hover:bg-gray-800 transition-colors">
+                  <button
+                    title="Open statistics"
+                    aria-label="Open statistics"
+                    className="p-2 border border-gray-700 rounded-full hover:bg-gray-800 transition-colors"
+                  >
                     <BarChart2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -214,8 +232,9 @@ export const GameDetails: React.FC = () => {
                 </h3>
                 <div className="relative aspect-video bg-gray-900 rounded overflow-hidden group cursor-pointer border border-gray-800">
                   <img
-                    src={game.bannerImage || game.image}
+                    src={trailerPreview}
                     alt="Trailer"
+                    onError={handleImageFallback}
                     className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity"
                   />
 
@@ -243,14 +262,16 @@ export const GameDetails: React.FC = () => {
                   </a>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                  {galleryImages.slice(0, 6).map((imageUrl, index) => (
                     <div
-                      key={i}
+                      key={imageUrl}
                       className="aspect-square bg-gray-800 rounded overflow-hidden"
                     >
                       <img
-                        src={game.image}
-                        alt="Screenshot"
+                        src={imageUrl}
+                        alt={`${game.title} screenshot ${index + 1}`}
+                        loading="lazy"
+                        onError={handleImageFallback}
                         className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
                       />
                     </div>
@@ -271,7 +292,11 @@ export const GameDetails: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <select className="bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded px-3 py-1.5 focus:outline-none focus:border-gray-500">
+                <select
+                  title="Sort reviews"
+                  aria-label="Sort reviews"
+                  className="bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded px-3 py-1.5 focus:outline-none focus:border-gray-500"
+                >
                   <option>Recommandées</option>
                   <option>Plus récentes</option>
                   <option>Mieux notées</option>

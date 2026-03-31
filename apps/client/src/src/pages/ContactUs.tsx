@@ -91,7 +91,6 @@ export const ContactUs: React.FC = () => {
 
       await contactService.submit(payload)
       setStatus('success')
-      setForm(initialForm)
     } catch (error) {
       console.error('Failed to submit contact form', error)
       setStatus('error')
