@@ -1,3 +1,4 @@
+import { Session } from '#auth/session.entity.js'
 import { Category } from '#games/category.entity.js'
 import { Game } from '#games/game.entity.js'
 import { GameToCategory } from '#games/gameToCategory.entity.js'
@@ -18,6 +19,15 @@ export const AppDataSource = new DataSource({
   database: config.db.database,
   synchronize: true,
   logging: false,
-  entities: [User, Review, Tag, ReviewToTag, Game, Category, GameToCategory],
+  entities: [
+    User,
+    Session,
+    Review,
+    Tag,
+    ReviewToTag,
+    Game,
+    Category,
+    GameToCategory
+  ],
   migrations: ['src/migrations/**/*.ts']
 })
