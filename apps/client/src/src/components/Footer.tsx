@@ -23,25 +23,31 @@ export const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer noopener"
+                title="Twitter"
+                aria-label="Twitter"
                 className="text-gray-400 hover:text-accent transition-colors"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://github.com"
+                target="_blank"
+                rel="noreferrer noopener"
+                title="GitHub"
+                aria-label="GitHub"
                 className="text-gray-400 hover:text-accent transition-colors"
               >
                 <Github className="w-5 h-5" />
               </a>
               <a
-                href="#"
-                className="text-gray-400 hover:text-accent transition-colors"
-              >
-                <div className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
+                href="https://youtube.com"
+                target="_blank"
+                rel="noreferrer noopener"
+                title="YouTube"
+                aria-label="YouTube"
                 className="text-gray-400 hover:text-accent transition-colors"
               >
                 <Youtube className="w-5 h-5" />
@@ -95,36 +101,44 @@ export const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/legal"
+                  className="text-gray-400 hover:text-accent transition-colors"
+                >
+                  Legal
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terms-of-service"
                   className="text-gray-400 hover:text-accent transition-colors"
                 >
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/privacy-policy"
                   className="text-gray-400 hover:text-accent transition-colors"
                 >
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/cookie-policy"
                   className="text-gray-400 hover:text-accent transition-colors"
                 >
                   Cookie Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/contact-us"
                   className="text-gray-400 hover:text-accent transition-colors"
                 >
                   Contact Us
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

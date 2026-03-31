@@ -39,6 +39,22 @@ export interface Review {
   isPositive?: boolean
 }
 
+export interface ContactRequest {
+  firstName: string
+  lastName: string
+  email: string
+  subject: string
+  category: 'support' | 'bug-report' | 'business' | 'other'
+  message: string
+  acceptedPolicy: boolean
+}
+
+export interface ContactResponse {
+  id: string
+  status: 'received'
+  createdAt: string
+}
+
 // Mock Data - Real Games
 const mockGames: Game[] = [
   {
@@ -334,5 +350,12 @@ export const adminService = {
       totalReviews: mockReviews.length,
       reportedReviews: 3
     }
+  }
+}
+
+export const contactService = {
+  submit: async (payload: ContactRequest): Promise<ContactResponse> => {
+    const response = await api.post<ContactResponse>('/contact', payload)
+    return response.data
   }
 }
