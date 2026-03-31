@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
-  PrimaryColumn,
   PrimaryGeneratedColumn
 } from 'typeorm'
 
@@ -14,7 +13,7 @@ export class Game {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @PrimaryColumn({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   slug!: string
 
   @Column({ type: 'varchar', length: 255 })

@@ -1,3 +1,4 @@
+import { Game } from '#games/game.entity.js'
 import { User } from '#users/user.entity.js'
 import {
   Column,
@@ -32,6 +33,13 @@ export class Review {
   @ManyToOne('User', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user!: User
+
+  @Column({ type: 'uuid' })
+  game_id!: string
+
+  @ManyToOne('Game', { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'game_id' })
+  game!: Game
 
   @OneToMany(() => ReviewToTag, (reviewToTag) => reviewToTag.review)
   reviews_to_tags?: ReviewToTag[]

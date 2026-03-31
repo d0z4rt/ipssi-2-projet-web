@@ -14,14 +14,8 @@ export class GameToCategory {
   @PrimaryColumn({ type: 'uuid' })
   game_id!: string
 
-  @PrimaryColumn({ type: 'varchar', length: 255 })
-  game_slug!: string
-
   @ManyToOne(() => Game, { onDelete: 'CASCADE' })
-  @JoinColumn([
-    { name: 'game_id', referencedColumnName: 'id' },
-    { name: 'game_slug', referencedColumnName: 'slug' }
-  ])
+  @JoinColumn({ name: 'game_id' })
   game!: Game
 
   @PrimaryColumn({ type: 'uuid' })
