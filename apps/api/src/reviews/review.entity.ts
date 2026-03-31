@@ -1,0 +1,49 @@
+import { User } from '#users/user.entity.js'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn
+} from 'typeorm'
+
+import { ReviewToTag } from './reviewToTag.entity.js'
+import { Tag } from './tag.entity.js'
+
+@Entity('reviews')
+export class Review {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string
+
+  @Column({ type: 'varchar', length: 255 })
+  title!: string
+
+  @Column({ type: 'text', nullable: true })
+  content?: string
+
+  @Column({ type: 'int', nullable: true })
+  rating?: number
+
+  @Column({ type: 'uuid' })
+  user_id!: string
+
+  @ManyToOne('User', { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user!: User
+
+  @OneToMany(() => ReviewToTag, (reviewToTag) => reviewToTag.review)
+  reviews_to_tags?: ReviewToTag[]
+
+  @CreateDateColumn({
+    type: 'timestamptz',
+    precision: 3,
+    default: () => 'CURRENT_TIMESTAMP'
+  })
+  created_at!: Date
+
+  get tags(): Tag[] {
+    return this.reviews_to_tags?.map((reviewToTag) => reviewToTag.tag) || []
+  }
+}

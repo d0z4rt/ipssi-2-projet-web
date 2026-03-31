@@ -1,3 +1,4 @@
+import gameRoutes from '#games/game.routes.js'
 import { type Handler, Router } from 'express'
 
 import { logger } from './utils/logger.js'
@@ -6,13 +7,17 @@ const router = Router()
 
 const defaultRoutes: { path: string; route: Handler }[] = [
   {
-    path: '/status',
+    path: '/health',
     route: (_req, res) => {
       res.send({
         statusCode: 200,
         message: 'Api running'
       })
     }
+  },
+  {
+    path: '/v1/games',
+    route: gameRoutes
   },
   {
     path: '/',

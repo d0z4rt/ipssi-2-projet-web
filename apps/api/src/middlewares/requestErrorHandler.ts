@@ -14,6 +14,7 @@ const requestErrorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 
   if (err instanceof ApiError) {
     res.status(err.statusCode).json({
+      statusCode: err.statusCode,
       error: err.message || 'Server internal error'
     })
     return
