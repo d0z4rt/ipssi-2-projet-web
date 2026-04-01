@@ -6,21 +6,17 @@ const gameRepository = AppDataSource.getRepository(Game)
 const gameService = {
   getAll: async () => {
     return gameRepository.find({
-      relations: {
-        games_to_categories: {
-          category: true
-        }
-      }
+      relations: ['games_to_categories', 'games_to_categories.category']
     })
   },
   getOne: async (id: string) => {
     return gameRepository.findOne({
       where: { id },
-      relations: {
-        games_to_categories: {
-          category: true
-        }
-      }
+      relations: [
+        'games_to_categories',
+        'games_to_categories.category',
+        'reviews'
+      ]
     })
   }
 }

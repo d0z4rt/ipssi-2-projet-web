@@ -10,13 +10,13 @@ const sessionRepository = AppDataSource.getRepository(Session)
 const authenticate: RequestHandler = async (req, res, next) => {
   const authHeader = req.headers.authorization
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'Unauthorized' })
+    res.status(401).json({ statusCode: 401, error: 'Unauthorized' })
     return
   }
 
   const token = authHeader.split(' ')[1]
   if (!token) {
-    res.status(401).json({ error: 'Unauthorized' })
+    res.status(401).json({ statusCode: 401, error: 'Unauthorized' })
     return
   }
 
@@ -42,7 +42,7 @@ const authenticate: RequestHandler = async (req, res, next) => {
   }
 
   if (!validSession) {
-    res.status(401).json({ error: 'Invalid session' })
+    res.status(401).json({ statusCode: 401, error: 'Invalid session' })
     return
   }
 

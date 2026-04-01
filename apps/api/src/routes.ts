@@ -1,4 +1,5 @@
 import gameRoutes from '#games/game.routes.js'
+import reviewRoutes from '#reviews/review.routes.js'
 import { type Handler, Router } from 'express'
 
 import { logger } from './utils/logger.js'
@@ -18,6 +19,10 @@ const defaultRoutes: { path: string; route: Handler }[] = [
   {
     path: '/v1/games',
     route: gameRoutes
+  },
+  {
+    path: '/v1/reviews',
+    route: reviewRoutes
   },
   {
     path: '/',

@@ -7,19 +7,21 @@ const userRepository = AppDataSource.getRepository(User)
 const userService = {
   create: async (username: string, mail: string, password: string) => {
     const hashedPassword = await argon2.hash(password, {
-      type: argon2.argon2id,
-      memoryCost: 65536,
-      timeCost: 3,
-      parallelism: 4
+      type: argon2.argon2id, // Recommended: argon2id
+      memoryCost: 65536, // 64 MB
+      timeCost: 3, // 3 iterations
+      parallelism: 4 // 4 parallel threads
     })
 
-    const user = await userRepository.save({
+    const user = userRepository.create({
       username,
       mail,
       password: hashedPassword
     })
 
-    return user
+    const saved_user = await userRepository.save(user)
+
+    return saved_user
   }
 }
 
