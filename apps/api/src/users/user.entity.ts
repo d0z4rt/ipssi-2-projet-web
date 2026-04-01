@@ -1,3 +1,4 @@
+import { Like } from '#reviews/like.entity.js'
 import { Review } from '#reviews/review.entity.js'
 import {
   Column,
@@ -12,10 +13,10 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   username!: string
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   mail!: string
 
   @Column({ type: 'varchar', length: 255 })
@@ -28,7 +29,10 @@ export class User {
   is_curator!: string
 
   @OneToMany(() => Review, (review) => review.user)
-  reviews?: Review[]
+  reviews: Review[] | null = null
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[] | null = null
 
   @CreateDateColumn({
     type: 'timestamptz',

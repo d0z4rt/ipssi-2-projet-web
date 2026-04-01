@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn
 } from 'typeorm'
 
+import { Like } from './like.entity.js'
 import { ReviewToTag } from './reviewToTag.entity.js'
 import { Tag } from './tag.entity.js'
 
@@ -22,10 +23,10 @@ export class Review {
   title!: string
 
   @Column({ type: 'text', nullable: true })
-  content?: string
+  content: string | null = null
 
   @Column({ type: 'int', nullable: true })
-  rating?: number
+  rating: number | null = null
 
   @Column({ type: 'uuid' })
   user_id!: string
@@ -42,7 +43,10 @@ export class Review {
   game!: Game
 
   @OneToMany(() => ReviewToTag, (reviewToTag) => reviewToTag.review)
-  reviews_to_tags?: ReviewToTag[]
+  reviews_to_tags: ReviewToTag[] | null = null
+
+  @OneToMany(() => Like, (like) => like.review)
+  likes: Like[] | null = null
 
   @CreateDateColumn({
     type: 'timestamptz',

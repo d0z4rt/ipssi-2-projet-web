@@ -1,3 +1,4 @@
+import { Review } from '#reviews/review.entity.js'
 import {
   Column,
   CreateDateColumn,
@@ -20,32 +21,35 @@ export class Game {
   name!: string
 
   @Column({ type: 'text', nullable: true })
-  description?: string
+  description: string | null = null
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  cover_image?: string
+  cover_image: string | null = null
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  banner_image?: string
+  banner_image: string | null = null
 
   @Column({ type: 'varchar', array: true, nullable: true })
-  screenshots?: string[]
+  screenshots: string[] | null = null
 
   @Column({ type: 'varchar', array: true, nullable: true })
-  platforms?: string[]
+  platforms: string[] | null = null
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  developer?: string
+  developer: string | null = null
 
   @CreateDateColumn({
     type: 'timestamptz',
     precision: 3,
     nullable: true
   })
-  released_at!: Date
+  released_at: Date | null = null
 
   @OneToMany(() => GameToCategory, (gameToCategory) => gameToCategory.game)
-  games_to_categories?: GameToCategory[]
+  games_to_categories: GameToCategory[] | null = null
+
+  @OneToMany(() => Review, (review) => review.game)
+  reviews: Review[] | null = null
 
   @CreateDateColumn({
     type: 'timestamptz',
