@@ -1,9 +1,12 @@
+/**
+ * the default password for all the users is `Strongpass1`
+ */
 export const usersSeed = [
   {
     username: 'john_doe',
     mail: 'john@example.com',
     password:
-      '$argon2id$v=19$m=65536,t=3,p=4$mOWjwmOc9Uzxx13HmKMrBw$JxaZSk5rVn/qlVzEFsvbNUxN6h3L+XL6dTwux1dIRwk', // Strongpass1
+      '$argon2id$v=19$m=65536,t=3,p=4$mOWjwmOc9Uzxx13HmKMrBw$JxaZSk5rVn/qlVzEFsvbNUxN6h3L+XL6dTwux1dIRwk',
     is_admin: false,
     is_curator: false
   },
