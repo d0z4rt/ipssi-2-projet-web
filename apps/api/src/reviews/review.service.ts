@@ -147,7 +147,11 @@ const reviewService = {
     }
 
     const { tags: _, ...updateData } = data
-    await reviewRepository.update(id, updateData)
+
+    if (Object.keys(updateData).length > 0) {
+      await reviewRepository.update(id, updateData)
+    }
+
     return reviewService.getOne(id)
   },
 
