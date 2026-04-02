@@ -2,6 +2,7 @@ import { Session } from '#auth/session.entity.js'
 import { Category } from '#games/category.entity.js'
 import { Game } from '#games/game.entity.js'
 import { GameToCategory } from '#games/gameToCategory.entity.js'
+import { GameUserStatus } from '#games/gameUserStatus.entity.js'
 import { Like } from '#reviews/like.entity.js'
 import { Review } from '#reviews/review.entity.js'
 import { ReviewToTag } from '#reviews/reviewToTag.entity.js'
@@ -28,6 +29,7 @@ export const AppDataSource = new DataSource({
     Tag,
     ReviewToTag,
     Game,
+    GameUserStatus,
     Category,
     GameToCategory
   ],

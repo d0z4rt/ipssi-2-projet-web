@@ -1,3 +1,4 @@
+import { GameUserStatus } from '#games/gameUserStatus.entity.js'
 import { Like } from '#reviews/like.entity.js'
 import { Review } from '#reviews/review.entity.js'
 import {
@@ -33,6 +34,9 @@ export class User {
 
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[] | null = null
+
+  @OneToMany(() => GameUserStatus, (gameUserStatus) => gameUserStatus.user)
+  game_statuses: GameUserStatus[] | null = null
 
   @CreateDateColumn({
     type: 'timestamptz',

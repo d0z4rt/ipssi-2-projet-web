@@ -2,7 +2,6 @@ import {
   Check,
   Heart,
   Bookmark,
-  ListPlus,
   Play,
   BarChart2,
   ExternalLink
@@ -16,10 +15,48 @@ import { useAuth } from '../context/AuthContext'
 import {
   API_BASE_URL,
   Game,
+  GameUserStatus,
   Review,
   gameService,
   reviewService
 } from '../services/api'
+
+type StatusButtonConfig = {
+  status: GameUserStatus
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+}
+
+const STATUS_BUTTONS: StatusButtonConfig[] = [
+  {
+    status: 'played',
+    label: 'Joue',
+    icon: Check
+  },
+  {
+    status: 'want_to_play',
+    label: "Envie d'y jouer",
+    icon: Bookmark
+  },
+  {
+    status: 'playing',
+    label: 'En cours',
+    icon: Play
+  },
+  {
+    status: 'favorite',
+    label: 'Coup de coeur',
+    icon: Heart
+  }
+]
+
+const createStatusLoadingState = (): Record<GameUserStatus, boolean> => ({
+  played: false,
+  want_to_play: false,
+  playing: false,
+  favorite: false
+})
+
 export const GameDetails: React.FC = () => {
   const { isAuthenticated, user } = useAuth()
   const location = useLocation()
@@ -36,6 +73,12 @@ export const GameDetails: React.FC = () => {
   const [reviewRating, setReviewRating] = useState(7)
   const [reviewContent, setReviewContent] = useState('')
   const [reviewTags, setReviewTags] = useState('')
+  const [gameStatuses, setGameStatuses] = useState<GameUserStatus[]>([])
+  const [isLoadingStatuses, setIsLoadingStatuses] = useState(false)
+  const [statusError, setStatusError] = useState('')
+  const [statusLoadingByType, setStatusLoadingByType] = useState<
+    Record<GameUserStatus, boolean>
+  >(createStatusLoadingState)
   useEffect(() => {
     const fetchGameData = async () => {
       if (!slug) return
@@ -84,6 +127,33 @@ export const GameDetails: React.FC = () => {
 
     target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [loading, location.hash, reviews])
+
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      if (!game || !isAuthenticated) {
+        setGameStatuses([])
+        return
+      }
+
+      setIsLoadingStatuses(true)
+      setStatusError('')
+      try {
+        const statuses = await gameService.getMyStatuses(game.id)
+        setGameStatuses(statuses)
+      } catch (error) {
+        setStatusError(
+          error instanceof Error
+            ? error.message
+            : 'Impossible de charger vos statuts pour ce jeu.'
+        )
+      } finally {
+        setIsLoadingStatuses(false)
+      }
+    }
+
+    void fetchStatuses()
+  }, [game, isAuthenticated])
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-darkBg">
@@ -138,6 +208,47 @@ export const GameDetails: React.FC = () => {
     event: React.SyntheticEvent<HTMLImageElement>
   ) => {
     event.currentTarget.src = game.image
+  }
+
+  const hasStatus = (status: GameUserStatus) => gameStatuses.includes(status)
+
+  const toggleStatus = async (status: GameUserStatus) => {
+    if (!game) {
+      return
+    }
+
+    if (!isAuthenticated) {
+      setStatusError('Connectez-vous pour gerer vos statuts de jeu.')
+      return
+    }
+
+    const nextActive = !hasStatus(status)
+
+    setStatusError('')
+    setStatusLoadingByType((current) => ({
+      ...current,
+      [status]: true
+    }))
+
+    try {
+      const statuses = await gameService.setMyStatus(
+        game.id,
+        status,
+        nextActive
+      )
+      setGameStatuses(statuses)
+    } catch (error) {
+      setStatusError(
+        error instanceof Error
+          ? error.message
+          : 'Impossible de mettre a jour ce statut.'
+      )
+    } finally {
+      setStatusLoadingByType((current) => ({
+        ...current,
+        [status]: false
+      }))
+    }
   }
 
   const canWriteReview = Boolean(
@@ -315,22 +426,39 @@ export const GameDetails: React.FC = () => {
                 ÉCRIRE UNE CRITIQUE
               </button>
 
+              {statusError && (
+                <div className="mb-3 rounded border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                  {statusError}
+                </div>
+              )}
+
+              {isLoadingStatuses && (
+                <p className="mb-3 text-xs text-gray-400">
+                  Chargement de vos statuts...
+                </p>
+              )}
+
               <div className="space-y-1">
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors">
-                  <Check className="w-4 h-4" /> Joué
-                </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors">
-                  <Bookmark className="w-4 h-4" /> Envie d'y jouer
-                </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors">
-                  <Play className="w-4 h-4" /> En cours
-                </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors">
-                  <Heart className="w-4 h-4" /> Coup de coeur
-                </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors">
-                  <ListPlus className="w-4 h-4" /> Ajouter à une liste
-                </button>
+                {STATUS_BUTTONS.map(({ status, label, icon: Icon }) => {
+                  const active = hasStatus(status)
+                  const loadingStatus = statusLoadingByType[status]
+
+                  return (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => void toggleStatus(status)}
+                      disabled={loadingStatus}
+                      className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded transition-colors border ${
+                        active
+                          ? 'text-white bg-accent/15 border-accent/50'
+                          : 'text-gray-300 border-transparent hover:bg-gray-800'
+                      } ${loadingStatus ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                      <Icon className="w-4 h-4" /> {label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
