@@ -15,7 +15,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
-import { getGameSlugById } from '../services/api'
+import { API_BASE_URL, getGameSlugById } from '../services/api'
 import {
   GameUserStatus,
   Review,
@@ -522,7 +522,7 @@ export const Dashboard: React.FC = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <img
-                              src={game.image}
+                              src={`${API_BASE_URL}/v1/${game.image}`}
                               alt={game.title}
                               className="w-10 h-10 rounded object-cover"
                             />
