@@ -9,9 +9,9 @@ export const gamesSeed = [
     released_at: '2015-05-17T22:00:00.000Z',
     categories: ['RPG'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ad9240e088f953a84aee814034c50a6a92bf4516/header.jpg?t=1768303991',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ad9240e088f953a84aee814034c50a6a92bf4516/library_hero.jpg?t=1768303991',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_5710298af2318afd9aa72449ef29ac4a2ef64d8e.1920x1080.jpg?t=1768303991',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_0901e64e9d4b8ebaea8348c194e7a3644d2d832d.1920x1080.jpg?t=1768303991',
@@ -45,9 +45,9 @@ export const gamesSeed = [
     released_at: '2020-12-08T23:00:00.000Z',
     categories: ['RPG'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/e9047d8ec47ae3d94bb8b464fb0fc9e9972b4ac7/header.jpg?t=1769690377',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/e9047d8ec47ae3d94bb8b464fb0fc9e9972b4ac7/library_hero.jpg?t=1769690377',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_2f649b68d579bf87011487d29bc4ccbfdd97d34f.1920x1080.jpg?t=1769690377',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_0e64170751e1ae20ff8fdb7001a8892fd48260e7.1920x1080.jpg?t=1769690377',
@@ -85,9 +85,9 @@ export const gamesSeed = [
     released_at: '2023-08-02T22:00:00.000Z',
     categories: ['Adventure', 'RPG', 'Strategy'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/48a2fcbda8565bb45025e98fd8ebde8a7203f6a0/header.jpg?t=1773079016',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/48a2fcbda8565bb45025e98fd8ebde8a7203f6a0/library_hero.jpg?t=1773079016',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_c73bc54415178c07fef85f54ee26621728c77504.1920x1080.jpg?t=1773079016',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_73d93bea842b93914d966622104dcb8c0f42972b.1920x1080.jpg?t=1773079016',
@@ -122,9 +122,9 @@ export const gamesSeed = [
     released_at: '2022-02-23T23:00:00.000Z',
     categories: ['Action', 'RPG'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg?t=1767883716',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_hero.jpg?t=1767883716',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_943bf6fe62352757d9070c1d33e50b92fe8539f1.1920x1080.jpg?t=1767883716',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_dcdac9e4b26ac0ee5248bfd2967d764fd00cdb42.1920x1080.jpg?t=1767883716',
@@ -150,9 +150,9 @@ export const gamesSeed = [
     released_at: '2022-01-13T23:00:00.000Z',
     categories: ['Action', 'Adventure', 'RPG'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1593500/header.jpg?t=1763059412',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1593500/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1593500/library_hero.jpg?t=1763059412',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1593500/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1593500/ss_6eccc970b5de2943546d93d319be1b5c0618f21b.1920x1080.jpg?t=1763059412',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1593500/ss_f1bff24d3967a21d303d95e11ed892e3d9113057.1920x1080.jpg?t=1763059412',
@@ -178,9 +178,9 @@ export const gamesSeed = [
     released_at: '2019-12-04T23:00:00.000Z',
     categories: ['Action', 'Adventure'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg?t=1759502961',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/library_hero.jpg?t=1759502961',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_66b553f4c209476d3e4ce25fa4714002cc914c4f.1920x1080.jpg?t=1759502961',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_bac60bacbf5da8945103648c08d27d5e202444ca.1920x1080.jpg?t=1759502961',
@@ -201,9 +201,9 @@ export const gamesSeed = [
     released_at: '2023-09-04T22:00:00.000Z',
     categories: ['RPG'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1716740/header.jpg?t=1773759594',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1716740/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1716740/library_hero.jpg?t=1773759594',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1716740/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1716740/ss_4887dc140a637684ddcfca518458668409f946dc.1920x1080.jpg?t=1773759594',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1716740/ss_b2821283cb140cd5a6289a8160016b6a60d8f96e.1920x1080.jpg?t=1773759594',
@@ -228,9 +228,9 @@ export const gamesSeed = [
     released_at: '2023-02-09T23:00:00.000Z',
     categories: ['Action', 'Adventure', 'RPG'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/a3cdc6f40d97df8ac993679c2dd1edeb5222421e/header.jpg?t=1773932856',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/a3cdc6f40d97df8ac993679c2dd1edeb5222421e/library_hero.jpg?t=1773932856',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/ss_725bf58485beb4aa37a3a69c1e2baa69bf3e4653.1920x1080.jpg?t=1773932856',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/990080/ss_df93b5e8a183f7232d68be94ae78920a90de1443.1920x1080.jpg?t=1773932856',
@@ -251,9 +251,9 @@ export const gamesSeed = [
     released_at: '2012-08-20T22:00:00.000Z',
     categories: ['Action', 'Free To Play'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/header.jpg?t=1749053861',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/library_hero.jpg?t=1749053861',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/ss_796601d9d67faf53486eeb26d0724347cea67ddc.1920x1080.jpg?t=1749053861',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/ss_d830cfd0550fbb64d80e803e93c929c3abb02056.1920x1080.jpg?t=1749053861',
@@ -288,9 +288,9 @@ export const gamesSeed = [
     released_at: '2013-07-08T22:00:00.000Z',
     categories: ['Action', 'Strategy', 'Free To Play'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/header.jpg?t=1769535998',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/library_hero.jpg?t=1769535998',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/ss_ad8eee787704745ccdecdfde3a5cd2733704898d.1920x1080.jpg?t=1769535998',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/ss_7ab506679d42bfc0c0e40639887176494e0466d9.1920x1080.jpg?t=1769535998',
@@ -316,9 +316,9 @@ export const gamesSeed = [
     released_at: '2018-08-07T22:00:00.000Z',
     categories: ['Action'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/582010/header.jpg?t=1773328926',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/582010/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/582010/library_hero.jpg?t=1773328926',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/582010/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/582010/ss_a262c53b8629de7c6547933dc0b49d31f4e1b1f1.1920x1080.jpg?t=1773328926',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/582010/ss_6b4986a37c7b5c185a796085c002febcdd5357b5.1920x1080.jpg?t=1773328926',
@@ -342,9 +342,9 @@ export const gamesSeed = [
     released_at: '2019-03-20T23:00:00.000Z',
     categories: ['Action', 'Adventure'],
     cover_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/814380/header.jpg?t=1762888662',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/814380/library_600x900_2x.jpg',
     banner_image:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/814380/library_hero.jpg?t=1762888662',
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/814380/library_hero.jpg',
     screenshots: [
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/814380/ss_0f7b0f8ed9ffc49aba26f9328caa9a1d59ad60f0.1920x1080.jpg?t=1762888662',
       'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/814380/ss_2685dd844a2a523b6c7ec207d46a538db6a908cd.1920x1080.jpg?t=1762888662',

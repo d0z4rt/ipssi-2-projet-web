@@ -41,7 +41,7 @@ async function getSteamGameData(
 
   try {
     const response = await fetch(url)
-    const data: SteamAppDetails = await response.json()
+    const data: SteamAppDetails = (await response.json()) as SteamAppDetails
 
     if (!data[appId]?.success) {
       throw new Error(`Failed to fetch data for app ${appId}`)
@@ -66,13 +66,10 @@ async function getSteamGameData(
     const categories = game.genres?.map((g) => g.description) || []
 
     // Get cover image (use header_image)
-    const cover_image = game.header_image || ''
+    const cover_image = `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/library_600x900_2x.jpg`
 
     // Banner image (use the same or a larger version)
-    const banner_image =
-      game.header_image?.replace('header.jpg', 'library_hero.jpg') ||
-      game.header_image ||
-      ''
+    const banner_image = `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/library_hero.jpg`
 
     // Get screenshots
     const screenshots = game.screenshots?.map((s) => s.path_full) || []
