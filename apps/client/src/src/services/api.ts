@@ -50,6 +50,8 @@ export interface Game {
 
 export type GameUserStatus = 'played' | 'want_to_play' | 'playing' | 'favorite'
 
+export type GameStatusSummary = Record<GameUserStatus, number>
+
 export interface UserGameWithStatuses {
   game: Game
   statuses: GameUserStatus[]
@@ -151,6 +153,10 @@ type ApiReview = {
 
 type ApiGameStatusesResponse = {
   statuses: GameUserStatus[]
+}
+
+type ApiGameStatusSummaryResponse = {
+  summary: GameStatusSummary
 }
 
 type ApiUserGameWithStatuses = {
@@ -598,6 +604,20 @@ export const gameService = {
           error,
           'Unable to retrieve your statuses for this game'
         )
+      )
+    }
+  },
+
+  getStatusSummary: async (gameId: string): Promise<GameStatusSummary> => {
+    try {
+      const response = await api.get<ApiGameStatusSummaryResponse>(
+        `/v1/games/${gameId}/status/summary`
+      )
+
+      return response.data.summary
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, 'Unable to retrieve game status summary')
       )
     }
   },

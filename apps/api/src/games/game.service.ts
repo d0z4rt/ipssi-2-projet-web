@@ -5,6 +5,15 @@ import { GameUserStatus, GameUserStatusType } from './gameUserStatus.entity.js'
 const gameRepository = AppDataSource.getRepository(Game)
 const gameUserStatusRepository = AppDataSource.getRepository(GameUserStatus)
 
+type GameStatusSummary = Record<GameUserStatusType, number>
+
+const createEmptyStatusSummary = (): GameStatusSummary => ({
+  played: 0,
+  want_to_play: 0,
+  playing: 0,
+  favorite: 0
+})
+
 const gameService = {
   getAll: async () => {
     return gameRepository.find({
@@ -62,6 +71,47 @@ const gameService = {
     }
 
     return Array.from(groupedByGameId.values())
+  },
+  getIncompatibleStatus: (
+    activeStatuses: GameUserStatusType[],
+    nextStatus: GameUserStatusType
+  ): GameUserStatusType | null => {
+    const incompatibleByStatus: Record<
+      GameUserStatusType,
+      GameUserStatusType[]
+    > = {
+      played: [GameUserStatusType.PLAYING],
+      playing: [GameUserStatusType.PLAYED],
+      want_to_play: [GameUserStatusType.FAVORITE],
+      favorite: [GameUserStatusType.WANT_TO_PLAY]
+    }
+
+    return (
+      activeStatuses.find((status) =>
+        incompatibleByStatus[nextStatus].includes(status)
+      ) ?? null
+    )
+  },
+  getStatusSummaryByGame: async (gameId: string) => {
+    const game = await gameRepository.findOne({ where: { id: gameId } })
+
+    if (!game) {
+      return null
+    }
+
+    const entries = await gameUserStatusRepository.find({
+      where: {
+        game_id: gameId
+      }
+    })
+
+    const summary = createEmptyStatusSummary()
+
+    for (const entry of entries) {
+      summary[entry.status] += 1
+    }
+
+    return summary
   },
   setUserStatusByGame: async (
     gameId: string,

@@ -8,6 +8,7 @@ const router = Router()
 router.get('/', controller.getAll)
 router.get('/statuses/me', authenticate, controller.getAllUserGameStatuses)
 router.get('/:id', controller.getOne)
+router.get('/:id/status/summary', controller.getStatusSummary)
 router.get('/:id/status', authenticate, controller.getUserStatuses)
 router.put('/:id/status', authenticate, controller.setUserStatus)
 

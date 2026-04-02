@@ -27,7 +27,7 @@ import {
 type DashboardTab = 'reviews' | 'games'
 
 const statusLabelMap: Record<GameUserStatus, string> = {
-  played: 'Joue',
+  played: 'Fini',
   want_to_play: "Envie d'y jouer",
   playing: 'En cours',
   favorite: 'Coup de coeur'

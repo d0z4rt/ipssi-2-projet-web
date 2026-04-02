@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext'
 import {
   API_BASE_URL,
   Game,
+  GameStatusSummary,
   GameUserStatus,
   Review,
   gameService,
@@ -30,7 +31,7 @@ type StatusButtonConfig = {
 const STATUS_BUTTONS: StatusButtonConfig[] = [
   {
     status: 'played',
-    label: 'Joue',
+    label: 'Fini',
     icon: Check
   },
   {
@@ -57,6 +58,53 @@ const createStatusLoadingState = (): Record<GameUserStatus, boolean> => ({
   favorite: false
 })
 
+const createEmptyStatusSummary = (): GameStatusSummary => ({
+  played: 0,
+  want_to_play: 0,
+  playing: 0,
+  favorite: 0
+})
+
+const areStatusesIncompatible = (
+  activeStatus: GameUserStatus,
+  nextStatus: GameUserStatus
+) => {
+  const isWantToPlayWithFavorite =
+    (activeStatus === 'want_to_play' && nextStatus === 'favorite') ||
+    (activeStatus === 'favorite' && nextStatus === 'want_to_play')
+
+  const isPlayedWithPlaying =
+    (activeStatus === 'played' && nextStatus === 'playing') ||
+    (activeStatus === 'playing' && nextStatus === 'played')
+
+  return isWantToPlayWithFavorite || isPlayedWithPlaying
+}
+
+const getIncompatibilityMessage = (
+  activeStatus: GameUserStatus,
+  nextStatus: GameUserStatus
+) => {
+  if (
+    (activeStatus === 'want_to_play' && nextStatus === 'favorite') ||
+    (activeStatus === 'favorite' && nextStatus === 'want_to_play')
+  ) {
+    return nextStatus === 'favorite'
+      ? "Retirez d'abord le statut Envie d'y jouer pour mettre Coup de coeur."
+      : "Retirez d'abord le statut Coup de coeur pour mettre Envie d'y jouer."
+  }
+
+  if (
+    (activeStatus === 'played' && nextStatus === 'playing') ||
+    (activeStatus === 'playing' && nextStatus === 'played')
+  ) {
+    return nextStatus === 'played'
+      ? "Retirez d'abord le statut En cours pour mettre Fini."
+      : "Retirez d'abord le statut Fini pour mettre En cours."
+  }
+
+  return 'Ce statut est incompatible avec un statut deja actif.'
+}
+
 export const GameDetails: React.FC = () => {
   const { isAuthenticated, user } = useAuth()
   const location = useLocation()
@@ -75,6 +123,9 @@ export const GameDetails: React.FC = () => {
   const [reviewTags, setReviewTags] = useState('')
   const [gameStatuses, setGameStatuses] = useState<GameUserStatus[]>([])
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(false)
+  const [statusSummary, setStatusSummary] = useState<GameStatusSummary>(
+    createEmptyStatusSummary
+  )
   const [statusError, setStatusError] = useState('')
   const [statusLoadingByType, setStatusLoadingByType] = useState<
     Record<GameUserStatus, boolean>
@@ -154,6 +205,38 @@ export const GameDetails: React.FC = () => {
     void fetchStatuses()
   }, [game, isAuthenticated])
 
+  useEffect(() => {
+    if (!game) {
+      setStatusSummary(createEmptyStatusSummary())
+      return
+    }
+
+    let isMounted = true
+
+    const fetchStatusSummary = async () => {
+      try {
+        const summary = await gameService.getStatusSummary(game.id)
+        if (isMounted) {
+          setStatusSummary(summary)
+        }
+      } catch {
+        if (isMounted) {
+          setStatusSummary(createEmptyStatusSummary())
+        }
+      }
+    }
+
+    void fetchStatusSummary()
+    const intervalId = window.setInterval(() => {
+      void fetchStatusSummary()
+    }, 10000)
+
+    return () => {
+      isMounted = false
+      window.clearInterval(intervalId)
+    }
+  }, [game])
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-darkBg">
@@ -181,8 +264,6 @@ export const GameDetails: React.FC = () => {
       </div>
     )
   }
-  const reviewCount = reviews.length
-  const totalLikes = reviews.reduce((sum, review) => sum + review.likes, 0)
   const averageRating =
     reviews.length > 0
       ? (
@@ -224,6 +305,22 @@ export const GameDetails: React.FC = () => {
 
     const nextActive = !hasStatus(status)
 
+    if (nextActive) {
+      const conflictingStatus = gameStatuses.find((activeStatus) =>
+        areStatusesIncompatible(activeStatus, status)
+      )
+
+      if (conflictingStatus) {
+        const conflictMessage = getIncompatibilityMessage(
+          conflictingStatus,
+          status
+        )
+
+        setStatusError(conflictMessage)
+        return
+      }
+    }
+
     setStatusError('')
     setStatusLoadingByType((current) => ({
       ...current,
@@ -237,6 +334,13 @@ export const GameDetails: React.FC = () => {
         nextActive
       )
       setGameStatuses(statuses)
+
+      try {
+        const summary = await gameService.getStatusSummary(game.id)
+        setStatusSummary(summary)
+      } catch {
+        // keep previous summary if live refresh fails
+      }
     } catch (error) {
       setStatusError(
         error instanceof Error
@@ -390,10 +494,11 @@ export const GameDetails: React.FC = () => {
 
                 <div className="flex items-center gap-4 text-sm text-gray-400">
                   <span className="flex items-center gap-1">
-                    <Heart className="w-4 h-4" /> {totalLikes}
+                    <Heart className="w-4 h-4" /> {statusSummary.favorite}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Bookmark className="w-4 h-4" /> {reviewCount}
+                    <Bookmark className="w-4 h-4" />{' '}
+                    {statusSummary.want_to_play}
                   </span>
                   <span className="flex items-center gap-1">
                     <BarChart2 className="w-4 h-4" /> {averageRating}
