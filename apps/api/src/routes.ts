@@ -1,3 +1,4 @@
+import authRoutes from '#auth/auth.routes.js'
 import gameRoutes from '#games/game.routes.js'
 import reviewRoutes from '#reviews/review.routes.js'
 import { type Handler, Router } from 'express'
@@ -17,6 +18,10 @@ const defaultRoutes: { path: string; route: Handler }[] = [
     }
   },
   {
+    path: '/v1/auth',
+    route: authRoutes
+  },
+  {
     path: '/v1/games',
     route: gameRoutes
   },
@@ -27,7 +32,10 @@ const defaultRoutes: { path: string; route: Handler }[] = [
   {
     path: '/',
     route: (_req, res) => {
-      res.send('Welcome to  IPSSI 2 Projet Web')
+      res.send({
+        statusCode: 404,
+        message: 'Route not found'
+      })
     }
   }
 ]

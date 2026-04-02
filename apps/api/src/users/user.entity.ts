@@ -23,10 +23,10 @@ export class User {
   password!: string
 
   @Column({ type: 'bool', default: false })
-  is_admin!: string
+  is_admin!: boolean
 
   @Column({ type: 'bool', default: false })
-  is_curator!: string
+  is_curator!: boolean
 
   @OneToMany(() => Review, (review) => review.user)
   reviews: Review[] | null = null
