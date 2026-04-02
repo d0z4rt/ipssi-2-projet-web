@@ -24,6 +24,7 @@ router.put(
   validate(updateReviewSchema),
   controller.update
 )
+router.delete('/:id', authenticate, controller.delete)
 router.post('/:id/like', authenticate, controller.addLike)
 router.delete('/:id/like', authenticate, controller.removeLike)
 

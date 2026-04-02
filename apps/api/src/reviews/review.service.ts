@@ -156,6 +156,10 @@ const reviewService = {
   },
 
   delete: async (id: string) => {
+    const review = await reviewRepository.findOne({ where: { id } })
+    if (!review) {
+      throw new ApiError(404, 'Review not found')
+    }
     return reviewRepository.delete({ id })
   },
 
