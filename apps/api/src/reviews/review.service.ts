@@ -73,12 +73,26 @@ const reviewService = {
 
   getAll: async () => {
     return reviewRepository.find({
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
+      relations: {
+        reviews_to_tags: {
+          tag: true
+        },
+        likes: true
+      }
     })
   },
 
   getOne: async (id: string) => {
-    return reviewRepository.findOne({ where: { id } })
+    return reviewRepository.findOne({
+      where: { id },
+      relations: {
+        reviews_to_tags: {
+          tag: true
+        },
+        likes: true
+      }
+    })
   },
 
   getReviewsByTags: async (tagNames: string[]) => {
@@ -134,7 +148,7 @@ const reviewService = {
 
     const { tags: _, ...updateData } = data
     await reviewRepository.update(id, updateData)
-    return reviewRepository.findOneBy({ id })
+    return reviewService.getOne(id)
   },
 
   delete: async (id: string) => {

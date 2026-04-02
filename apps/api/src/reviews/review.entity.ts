@@ -58,4 +58,16 @@ export class Review {
   get tags(): Tag[] {
     return this.reviews_to_tags?.map((reviewToTag) => reviewToTag.tag) || []
   }
+
+  /**
+   * Returns a JSON representation of the review, omitting the reviews_to_tags field
+   */
+  toJSON() {
+    const { reviews_to_tags: _, ...rest } = this
+    return {
+      ...rest,
+      tags: this.tags.map((t) => t.name),
+      likes: this.likes?.length || 0
+    }
+  }
 }
