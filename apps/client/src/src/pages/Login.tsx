@@ -147,8 +147,8 @@ export const Login: React.FC = () => {
 
           {/* Demo Hint */}
           <div className="mt-6 pt-6 border-t border-gray-800 text-xs text-gray-500 text-center">
-            <p>Demo Admin: admin@test.com / admin123</p>
-            <p></p>
+            <p>Demo Admin: admin@admin.com / Strongpass1</p>
+            <p>master@example.com / Strongpass1</p>
           </div>
         </div>
       </motion.div>
