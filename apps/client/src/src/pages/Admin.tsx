@@ -4,10 +4,12 @@ import {
   Gamepad2,
   MessageSquare,
   Edit,
-  Trash2
+  Trash2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
 import {
@@ -18,6 +20,9 @@ import {
   reviewService,
   Review
 } from '../services/api'
+
+const REVIEWS_PER_PAGE = 20
+
 export const Admin: React.FC = () => {
   const { user, isAuthenticated } = useAuth()
   const [activeTab, setActiveTab] = useState<'overview' | 'games' | 'reviews'>(
@@ -32,6 +37,51 @@ export const Admin: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([])
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
+  const [isDeletingReviewId, setIsDeletingReviewId] = useState<string | null>(
+    null
+  )
+  const [reviewIdToDelete, setReviewIdToDelete] = useState<string | null>(null)
+  const [moderationError, setModerationError] = useState('')
+  const [reviewsPage, setReviewsPage] = useState(1)
+
+  const totalReviewPages = Math.max(
+    1,
+    Math.ceil(reviews.length / REVIEWS_PER_PAGE)
+  )
+  const paginatedReviews = reviews.slice(
+    (reviewsPage - 1) * REVIEWS_PER_PAGE,
+    reviewsPage * REVIEWS_PER_PAGE
+  )
+
+  const handleDeleteReviewFromModeration = async () => {
+    if (!reviewIdToDelete) {
+      return
+    }
+
+    const reviewId = reviewIdToDelete
+    setModerationError('')
+    setIsDeletingReviewId(reviewId)
+    try {
+      await reviewService.deleteReview(reviewId)
+      setReviews((current) =>
+        current.filter((review) => review.id !== reviewId)
+      )
+      setStats((current) => ({
+        ...current,
+        reviews: Math.max(0, current.reviews - 1)
+      }))
+    } catch (error) {
+      setModerationError(
+        error instanceof Error
+          ? error.message
+          : 'Suppression impossible pour le moment.'
+      )
+    } finally {
+      setIsDeletingReviewId(null)
+      setReviewIdToDelete(null)
+    }
+  }
+
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
@@ -60,6 +110,13 @@ export const Admin: React.FC = () => {
       fetchAdminData()
     }
   }, [user])
+
+  useEffect(() => {
+    if (reviewsPage > totalReviewPages) {
+      setReviewsPage(totalReviewPages)
+    }
+  }, [reviewsPage, totalReviewPages])
+
   if (!isAuthenticated || user?.role !== 'admin') {
     return <Navigate to="/" replace />
   }
@@ -270,37 +327,122 @@ export const Admin: React.FC = () => {
             <div className="bg-cardBg border border-gray-800 rounded-xl overflow-hidden">
               <div className="p-4 border-b border-gray-800 flex items-center justify-between">
                 <h2 className="font-medium text-white">Review feed</h2>
-                <span className="text-xs text-gray-500 uppercase tracking-wider">
-                  {reviews.length} loaded
-                </span>
+                <div className="flex items-center gap-4">
+                  <span className="text-xs text-gray-500 uppercase tracking-wider">
+                    {reviews.length} loaded
+                  </span>
+                  {reviews.length > 0 && (
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <button
+                        type="button"
+                        onClick={() => setReviewsPage((current) => current - 1)}
+                        disabled={reviewsPage === 1}
+                        className="inline-flex items-center justify-center rounded border border-gray-700 p-1.5 text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Page precedente"
+                        aria-label="Page precedente"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <span>
+                        Page {reviewsPage} / {totalReviewPages}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setReviewsPage((current) => current + 1)}
+                        disabled={reviewsPage >= totalReviewPages}
+                        className="inline-flex items-center justify-center rounded border border-gray-700 p-1.5 text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Page suivante"
+                        aria-label="Page suivante"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
+              {moderationError && (
+                <div className="mx-4 mt-4 rounded border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  {moderationError}
+                </div>
+              )}
               {reviews.length > 0 ? (
                 <div className="divide-y divide-gray-800">
-                  {reviews.slice(0, 10).map((review) => (
+                  {paginatedReviews.map((review) => (
                     <div
                       key={review.id}
                       className="p-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
                     >
-                      <div>
-                        <div className="text-white font-medium">
+                      <Link
+                        to={`/games/${encodeURIComponent(review.gameId)}#review-${review.id}`}
+                        className="group block flex-1 rounded-md px-1 py-1 transition-colors hover:bg-gray-900/50"
+                      >
+                        <div className="text-white font-medium group-hover:text-blue-400 transition-colors">
                           {review.title || 'Untitled review'}
                         </div>
                         <div className="text-sm text-gray-400">
                           Game ID {review.gameId} • User {review.username} •{' '}
                           {review.rating}/10
                         </div>
-                        <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                        <p className="mt-1 text-sm text-gray-500 line-clamp-2 group-hover:text-gray-300 transition-colors">
                           {review.content}
                         </p>
-                      </div>
+                      </Link>
                       <div className="flex items-center gap-3 text-sm text-gray-400">
                         <span>{review.likes} likes</span>
                         <span>
                           {new Date(review.createdAt).toLocaleDateString()}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => setReviewIdToDelete(review.id)}
+                          disabled={isDeletingReviewId === review.id}
+                          className="inline-flex items-center gap-1 rounded border border-red-500/30 px-2 py-1 text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          {isDeletingReviewId === review.id
+                            ? 'Suppression...'
+                            : 'Supprimer'}
+                        </button>
                       </div>
                     </div>
                   ))}
+
+                  {reviews.length > REVIEWS_PER_PAGE && (
+                    <div className="flex items-center justify-between border-t border-gray-800 px-4 py-3 text-sm text-gray-400">
+                      <span>
+                        Affichage {(reviewsPage - 1) * REVIEWS_PER_PAGE + 1} -{' '}
+                        {Math.min(
+                          reviewsPage * REVIEWS_PER_PAGE,
+                          reviews.length
+                        )}{' '}
+                        sur {reviews.length}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setReviewsPage((current) => current - 1)
+                          }
+                          disabled={reviewsPage === 1}
+                          className="inline-flex items-center gap-1 rounded border border-gray-700 px-2 py-1 text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Prec
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setReviewsPage((current) => current + 1)
+                          }
+                          disabled={reviewsPage >= totalReviewPages}
+                          className="inline-flex items-center gap-1 rounded border border-gray-700 px-2 py-1 text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          Suiv
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="p-8 text-center">
@@ -313,6 +455,39 @@ export const Admin: React.FC = () => {
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {reviewIdToDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+              <div className="w-full max-w-md rounded-xl border border-gray-800 bg-cardBg p-5 shadow-2xl">
+                <h3 className="text-lg font-semibold text-white">
+                  Confirmer la suppression
+                </h3>
+                <p className="mt-2 text-sm text-gray-300">
+                  Cette action supprimera definitivement la critique.
+                </p>
+                <div className="mt-5 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setReviewIdToDelete(null)}
+                    disabled={isDeletingReviewId === reviewIdToDelete}
+                    className="rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleDeleteReviewFromModeration()}
+                    disabled={isDeletingReviewId === reviewIdToDelete}
+                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+                  >
+                    {isDeletingReviewId === reviewIdToDelete
+                      ? 'Suppression...'
+                      : 'Confirmer'}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </>

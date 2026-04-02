@@ -1,4 +1,12 @@
-import { Check, Heart, Bookmark, ListPlus, Play, BarChart2 } from 'lucide-react'
+import {
+  Check,
+  Heart,
+  Bookmark,
+  ListPlus,
+  Play,
+  BarChart2,
+  ExternalLink
+} from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
@@ -51,6 +59,12 @@ export const GameDetails: React.FC = () => {
     }
     fetchGameData()
   }, [slug])
+
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo({ top: 0, behavior: 'auto' })
+    }
+  }, [slug, location.hash])
 
   useEffect(() => {
     if (loading || reviews.length === 0) return
@@ -111,6 +125,9 @@ export const GameDetails: React.FC = () => {
       ? game.screenshots
       : [game.bannerImage || game.image]
   const trailerPreview = galleryImages[0] || game.bannerImage || game.image
+  const steamUrl = game.steamAppId
+    ? `https://store.steampowered.com/app/${game.steamAppId}`
+    : null
   const handleImageFallback = (
     event: React.SyntheticEvent<HTMLImageElement>
   ) => {
@@ -223,7 +240,20 @@ export const GameDetails: React.FC = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
                 {game.title}
               </h1>
-              <p className="text-xl text-gray-300 mb-6">{releaseYear}</p>
+              <div className="mb-6 flex flex-wrap items-center gap-3">
+                <p className="text-xl text-gray-300">{releaseYear}</p>
+                {steamUrl && (
+                  <a
+                    href={steamUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-2 rounded-md border border-gray-600 bg-gray-900/70 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:border-gray-400 hover:bg-gray-800"
+                  >
+                    Voir sur Steam
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
 
               <div className="flex items-center gap-4">
                 <div

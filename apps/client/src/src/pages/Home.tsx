@@ -29,6 +29,8 @@ const steamStoreByGameId: Record<string, string> = {
   '8': 'https://crimsondesert.pearlabyss.com/'
 }
 
+const HOME_GAMES_SECTION_LIMIT = 12
+
 export const Home: React.FC = () => {
   const [trendingGames, setTrendingGames] = useState<Game[]>([])
   const [latestReleases, setLatestReleases] = useState<Game[]>([])
@@ -51,14 +53,29 @@ export const Home: React.FC = () => {
     featuredSteamFromAppId ||
     (featuredGame && steamStoreByGameId[featuredGame.id]) ||
     'https://store.steampowered.com'
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [trending, releases, reviews] = await Promise.all([
-          gameService.getTrendingGames(),
-          gameService.getLatestReleases(),
+        const [allGames, reviews] = await Promise.all([
+          gameService.getGames(),
           reviewService.getLatestReviews()
         ])
+
+        const trending = allGames
+          .slice()
+          .sort((left, right) => right.rating - left.rating)
+          .slice(0, HOME_GAMES_SECTION_LIMIT)
+
+        const releases = allGames
+          .slice()
+          .sort(
+            (left, right) =>
+              new Date(right.releaseDate).getTime() -
+              new Date(left.releaseDate).getTime()
+          )
+          .slice(0, HOME_GAMES_SECTION_LIMIT)
+
         setTrendingGames(trending)
         setLatestReleases(releases)
         setPopularReviews(reviews)
@@ -75,10 +92,25 @@ export const Home: React.FC = () => {
   ) => {
     if (ref.current) {
       const { scrollLeft, clientWidth } = ref.current
+      const firstItem = ref.current.querySelector<HTMLElement>(
+        '[data-carousel-item="true"]'
+      )
+
+      let scrollStep = clientWidth
+
+      if (firstItem) {
+        const styles = window.getComputedStyle(ref.current)
+        const gapValue = Number.parseFloat(
+          styles.gap || styles.columnGap || '0'
+        )
+        const itemWidth =
+          firstItem.offsetWidth + (Number.isNaN(gapValue) ? 0 : gapValue)
+        const visibleItems = Math.max(1, Math.floor(clientWidth / itemWidth))
+        scrollStep = itemWidth * visibleItems
+      }
+
       const scrollTo =
-        direction === 'left'
-          ? scrollLeft - clientWidth / 2
-          : scrollLeft + clientWidth / 2
+        direction === 'left' ? scrollLeft - scrollStep : scrollLeft + scrollStep
       ref.current.scrollTo({
         left: scrollTo,
         behavior: 'smooth'
@@ -180,10 +212,14 @@ export const Home: React.FC = () => {
 
             <div
               ref={trendingRef}
-              className="flex gap-2 overflow-x-auto py-2 snap-x scrollbar-hide"
+              className="flex gap-3 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-hide"
             >
               {trendingGames.map((game) => (
-                <div key={game.id} className="snap-start p-1">
+                <div
+                  key={game.id}
+                  data-carousel-item="true"
+                  className="snap-start shrink-0 w-[170px] sm:w-[180px] lg:w-[190px] xl:w-[200px] p-1"
+                >
                   <GameCard game={game} />
                 </div>
               ))}
@@ -226,10 +262,14 @@ export const Home: React.FC = () => {
 
             <div
               ref={releasesRef}
-              className="flex gap-2 overflow-x-auto py-2 snap-x scrollbar-hide"
+              className="flex gap-3 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-hide"
             >
               {latestReleases.map((game) => (
-                <div key={game.id} className="snap-start p-1">
+                <div
+                  key={game.id}
+                  data-carousel-item="true"
+                  className="snap-start shrink-0 w-[170px] sm:w-[180px] lg:w-[190px] xl:w-[200px] p-1"
+                >
                   <GameCard game={game} />
                 </div>
               ))}

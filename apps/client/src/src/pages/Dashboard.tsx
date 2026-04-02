@@ -27,6 +27,7 @@ export const Dashboard: React.FC = () => {
   const [isDeletingReviewId, setIsDeletingReviewId] = useState<string | null>(
     null
   )
+  const [reviewIdToDelete, setReviewIdToDelete] = useState<string | null>(null)
   useEffect(() => {
     const fetchUserReviews = async () => {
       if (user) {
@@ -94,14 +95,12 @@ export const Dashboard: React.FC = () => {
     }
   }
 
-  const handleDeleteReview = async (reviewId: string) => {
-    const confirmed = window.confirm(
-      'Confirmer la suppression de cette critique ?'
-    )
-    if (!confirmed) {
+  const handleDeleteReview = async () => {
+    if (!reviewIdToDelete) {
       return
     }
 
+    const reviewId = reviewIdToDelete
     setIsDeletingReviewId(reviewId)
     setActionError('')
     try {
@@ -120,6 +119,7 @@ export const Dashboard: React.FC = () => {
       )
     } finally {
       setIsDeletingReviewId(null)
+      setReviewIdToDelete(null)
     }
   }
 
@@ -227,8 +227,8 @@ export const Dashboard: React.FC = () => {
             {userReviews.map((review) => {
               const gameSlug = getGameSlugById(review.gameId)
               const targetUrl = gameSlug
-                ? `/games/${encodeURIComponent(gameSlug)}#review-${review.id}`
-                : `/games/${review.gameId}#review-${review.id}`
+                ? `/games/${encodeURIComponent(gameSlug)}`
+                : `/games/${review.gameId}`
 
               const isEditing = editingReviewId === review.id
               const isDeleting = isDeletingReviewId === review.id
@@ -352,7 +352,7 @@ export const Dashboard: React.FC = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => void handleDeleteReview(review.id)}
+                          onClick={() => setReviewIdToDelete(review.id)}
                           disabled={isDeleting}
                           className="flex items-center justify-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm rounded transition-colors disabled:opacity-60"
                         >
@@ -378,6 +378,39 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {reviewIdToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-xl border border-gray-800 bg-cardBg p-5 shadow-2xl">
+            <h3 className="text-lg font-semibold text-white">
+              Confirmer la suppression
+            </h3>
+            <p className="mt-2 text-sm text-gray-300">
+              Cette action supprimera definitivement la critique.
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setReviewIdToDelete(null)}
+                disabled={isDeletingReviewId === reviewIdToDelete}
+                className="rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteReview()}
+                disabled={isDeletingReviewId === reviewIdToDelete}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+              >
+                {isDeletingReviewId === reviewIdToDelete
+                  ? 'Suppression...'
+                  : 'Confirmer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
