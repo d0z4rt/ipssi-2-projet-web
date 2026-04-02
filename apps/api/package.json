@@ -11,27 +11,34 @@
     "start": "node --env-file .env dist/index.js",
     "build": "tsc",
     "type-check": "tsc --noEmit",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "argon2": "^0.44.0",
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "express-rate-limit": "^7.5.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.2",
     "helmet": "^8.1.0",
-    "pg": "^8.16.0",
+    "pg": "^8.20.0",
     "picocolors": "^1.1.1",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.24",
-    "zod": "^4.0.14"
+    "typeorm": "^0.3.28",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.2",
-    "@types/cors": "^2.8.18",
-    "@types/express": "^5.0.2",
+    "@tsconfig/node22": "^22.0.5",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.15.24",
-    "@types/pg": "^8.15.2",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3"
+    "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
+    "@vitest/ui": "^4.1.2",
+    "supertest": "^7.2.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
   }
 }

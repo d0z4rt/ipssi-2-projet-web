@@ -7,7 +7,8 @@ import { ApiError } from '../utils/errors.js'
 const requestErrorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof ZodError) {
     res.status(400).json({
-      error: z.prettifyError(err)
+      error: 'Validation error',
+      details: z.flattenError(err)
     })
     return
   }

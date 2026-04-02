@@ -1,14 +1,34 @@
-import { Game } from '#games/game.entity.js'
-import { MigrationInterface, QueryRunner } from 'typeorm'
+import { type MigrationInterface, type QueryRunner } from 'typeorm'
 
-const gamesSeed: Omit<Game, 'id' | 'created_at' | 'toJSON'>[] = [
+type SeedGame = {
+  name: string
+  slug: string
+  description: string
+  developer: string
+  released_at: Date
+  categories: string[]
+  cover_image: null
+  banner_image: null
+  screenshots: null
+  platforms: null
+  games_to_categories: null
+  reviews: null
+}
+
+const gamesSeed: SeedGame[] = [
   {
     name: 'The Witcher 3',
     slug: 'the-witcher-3',
     description: 'A fantasy RPG set in a vast open world.',
     developer: 'CD Projekt Red',
     released_at: new Date('2015-05-18'),
-    categories: ['RPG', 'Action']
+    categories: ['RPG', 'Action'],
+    cover_image: null,
+    banner_image: null,
+    screenshots: null,
+    platforms: null,
+    games_to_categories: null,
+    reviews: null
   },
   {
     name: 'Cyberpunk 2077',
@@ -16,7 +36,13 @@ const gamesSeed: Omit<Game, 'id' | 'created_at' | 'toJSON'>[] = [
     description: 'An open-world action RPG set in a futuristic metropolis.',
     developer: 'CD Projekt Red',
     released_at: new Date('2020-12-10'),
-    categories: ['RPG', 'Action']
+    categories: ['RPG', 'Action'],
+    cover_image: null,
+    banner_image: null,
+    screenshots: null,
+    platforms: null,
+    games_to_categories: null,
+    reviews: null
   },
   {
     name: "Baldur's Gate 3",
@@ -24,7 +50,13 @@ const gamesSeed: Omit<Game, 'id' | 'created_at' | 'toJSON'>[] = [
     description: 'A deep RPG based on D&D 5th edition rules.',
     developer: 'Larian Studios',
     released_at: new Date('2023-08-03'),
-    categories: ['RPG', 'Strategy']
+    categories: ['RPG', 'Strategy'],
+    cover_image: null,
+    banner_image: null,
+    screenshots: null,
+    platforms: null,
+    games_to_categories: null,
+    reviews: null
   }
 ]
 

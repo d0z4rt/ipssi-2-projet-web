@@ -6,7 +6,7 @@
     "build": "pnpm --parallel build",
     "start": "pnpm --parallel start",
     "docker": "docker compose -f docker-compose.yml up  -d --build",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "pnpm --filter api test",
     "check": "oxlint && oxfmt",
     "format": "oxfmt",
     "lint": "oxlint --fix --fix-suggestions",

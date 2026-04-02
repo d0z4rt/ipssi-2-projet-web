@@ -7,7 +7,7 @@ const envSchema = z.object({
   DB_PASSWORD: z.string().default(''),
   DB_NAME: z.string().default('projet-web'),
   PORT: z.coerce.number().default(4000),
-  NODE_ENV: z.enum(['development', 'production']).default('development')
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development')
 })
 
 const env = envSchema.parse(process.env)
