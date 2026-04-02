@@ -24,7 +24,7 @@ router.put(
   validate(updateReviewSchema),
   controller.update
 )
-router.post('/like', authenticate, controller.addLike)
-router.delete('/like', authenticate, controller.removeLike)
+router.post('/:id/like', authenticate, controller.addLike)
+router.delete('/:id/like', authenticate, controller.removeLike)
 
 export default router

@@ -35,17 +35,10 @@ const authService = {
       throw new ApiError(409, 'User already exists')
     }
 
-    const hashedPassword = await argon2.hash(dto.password, {
-      type: argon2.argon2id,
-      memoryCost: 65536,
-      timeCost: 3,
-      parallelism: 4
-    })
-
     const user = await userService.create({
       username: dto.username,
       mail: dto.mail,
-      password: hashedPassword,
+      password: dto.password,
       is_curator: dto.is_curator
     })
 

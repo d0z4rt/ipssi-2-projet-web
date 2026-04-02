@@ -81,7 +81,7 @@ const reviewController: ControllerHandlers = {
         throw new ApiError(500, 'Cette route nécessite une authentification')
       }
       const id = String(req.params.id)
-      const review = await service.addLike(req.user.id, id)
+      const review = await service.addLike(id, req.user.id)
       res.json(review)
     } catch (err) {
       next(err)
@@ -94,7 +94,7 @@ const reviewController: ControllerHandlers = {
         throw new ApiError(500, 'Cette route nécessite une authentification')
       }
       const id = String(req.params.id)
-      const review = await service.removeLike(req.user.id, id)
+      const review = await service.removeLike(id, req.user.id)
       res.json(review)
     } catch (err) {
       next(err)

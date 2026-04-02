@@ -1,0 +1,167 @@
+# API Test Suite
+# Use with REST Client extension in VS Code
+
+### Environment Configuration
+### Change this to match your API URL (default: http://localhost:3000)
+
+@baseUrl = http://localhost:4000
+@contentType = application/json
+
+@authToken = bcf09e390510346f98d20a38f10120183447d3cd5ad792c5e58fec6cb34545cd6548cf8054b227f406048f0f131bfde91f4fba41ff13c077b3dcaae4fa0b5edf
+
+### ============================================
+### Health Check
+### ============================================
+
+# @name healthCheck
+GET {{baseUrl}}/health
+Content-Type: {{contentType}}
+
+### ============================================
+### Auth Routes
+### ============================================
+
+# @name registerUser
+POST {{baseUrl}}/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser4",
+  "mail": "test4@example.com",
+  "is_curator": true,
+  "password": "password123"
+}
+
+### ============================================
+
+# @name login
+POST {{baseUrl}}/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "mail": "test3@example.com",
+  "password": "password123"
+}
+
+### ============================================
+### Games Routes
+### ============================================
+
+# @name getAllGames
+GET {{baseUrl}}/v1/games
+Content-Type: {{contentType}}
+
+### ============================================
+
+# @name getGameById
+GET {{baseUrl}}/v1/games/b0c360ec-682c-4f12-86ba-8aee194a53e5
+Content-Type: {{contentType}}
+
+### ============================================
+### Reviews Routes
+### ============================================
+
+# @name getAllReviews
+GET {{baseUrl}}/v1/reviews
+Content-Type: {{contentType}}
+
+### ============================================
+
+# @name getReviewById
+GET {{baseUrl}}/v1/reviews/81c24a02-f868-4b70-9147-1eb79dc68e88
+Content-Type: {{contentType}}
+
+### ============================================
+
+# @name createReview
+POST {{baseUrl}}/v1/reviews
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "game_id": "b0c360ec-682c-4f12-86ba-8aee194a53e5",
+  "title": "Test Review",
+  "content": "This is a test review content",
+  "rating": 5,
+  "tags": ["test", "test2"]
+}
+
+### ============================================
+
+# @name updateReview
+PUT {{baseUrl}}/v1/reviews/81c24a02-f868-4b70-9147-1eb79dc68e88
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Review",
+  "content": "This is an updated review content",
+  "rating": 4,
+  "tags": ["test", "test6"]
+}
+
+### ============================================
+
+# @name addLikeToReview
+POST {{baseUrl}}/v1/reviews/81c24a02-f868-4b70-9147-1eb79dc68e88/like
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+
+### ============================================
+
+# @name removeLikeFromReview
+DELETE {{baseUrl}}/v1/reviews/81c24a02-f868-4b70-9147-1eb79dc68e88/like
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+
+### ============================================
+### Error Scenarios
+### ============================================
+
+# @name loginInvalidCredentials
+POST {{baseUrl}}/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "password": "wrongpassword"
+}
+
+### ============================================
+
+# @name getGameNotFound
+GET {{baseUrl}}/v1/games/999999
+Content-Type: {{contentType}}
+
+### ============================================
+
+# @name getReviewNotFound
+GET {{baseUrl}}/v1/reviews/999999
+Content-Type: {{contentType}}
+
+### ============================================
+
+# @name createReviewUnauthorized
+POST {{baseUrl}}/v1/reviews
+Content-Type: {{contentType}}
+
+{
+  "gameId": 1,
+  "title": "Unauthorized Review",
+  "content": "This review should fail without auth",
+  "rating": 5
+}
+
+### ============================================
+
+# @name registerDuplicateUser
+POST {{baseUrl}}/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "email": "duplicate@example.com",
+  "password": "password123"
+}
