@@ -1,12 +1,5 @@
-import {
-  Check,
-  Heart,
-  Bookmark,
-  Play,
-  BarChart2,
-  ExternalLink
-} from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import { Check, Heart, Bookmark, Play, ExternalLink } from 'lucide-react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
 import { getRatingColor } from '../components/GameCard'
@@ -27,6 +20,8 @@ type StatusButtonConfig = {
   label: string
   icon: React.ComponentType<{ className?: string }>
 }
+
+type ReviewSortOption = 'recommended' | 'latest' | 'top_rated'
 
 const STATUS_BUTTONS: StatusButtonConfig[] = [
   {
@@ -121,6 +116,7 @@ export const GameDetails: React.FC = () => {
   const [reviewRating, setReviewRating] = useState(7)
   const [reviewContent, setReviewContent] = useState('')
   const [reviewTags, setReviewTags] = useState('')
+  const [reviewSort, setReviewSort] = useState<ReviewSortOption>('recommended')
   const [gameStatuses, setGameStatuses] = useState<GameUserStatus[]>([])
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(false)
   const [statusSummary, setStatusSummary] = useState<GameStatusSummary>(
@@ -237,6 +233,30 @@ export const GameDetails: React.FC = () => {
     }
   }, [game])
 
+  const sortedReviews = useMemo(() => {
+    const nextReviews = reviews.slice()
+
+    if (reviewSort === 'latest') {
+      return nextReviews.sort(
+        (left, right) =>
+          new Date(right.createdAt).getTime() -
+          new Date(left.createdAt).getTime()
+      )
+    }
+
+    if (reviewSort === 'top_rated') {
+      return nextReviews.sort(
+        (left, right) => right.rating - left.rating || right.likes - left.likes
+      )
+    }
+
+    return nextReviews.sort(
+      (left, right) =>
+        right.likes - left.likes ||
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    )
+  }, [reviews, reviewSort])
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-darkBg">
@@ -264,23 +284,25 @@ export const GameDetails: React.FC = () => {
       </div>
     )
   }
-  const averageRating =
-    reviews.length > 0
-      ? (
-          reviews.reduce((sum, review) => sum + review.rating, 0) /
-          reviews.length
-        ).toFixed(1)
-      : '0.0'
-  const releaseYear = new Date(game.releaseDate).getFullYear()
-  const formattedDate = new Intl.DateTimeFormat('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  }).format(new Date(game.releaseDate))
+  const releaseDate = new Date(game.releaseDate)
+  const isReleaseDateValid = !Number.isNaN(releaseDate.getTime())
+  const releaseYear = isReleaseDateValid ? releaseDate.getFullYear() : 'N/A'
+  const formattedDate = isReleaseDateValid
+    ? new Intl.DateTimeFormat('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }).format(releaseDate)
+    : 'Date inconnue'
+  const platforms = Array.isArray(game.platform) ? game.platform : []
+  const developerLabel = game.developer?.trim() || 'Inconnu'
+  const genreLabel = game.genre?.trim() || 'Inconnu'
+  const descriptionLabel =
+    game.description?.trim() || 'Description indisponible.'
   const galleryImages =
     game.screenshots && game.screenshots.length > 0
-      ? game.screenshots
-      : [game.bannerImage || game.image]
+      ? game.screenshots.filter(Boolean)
+      : [game.bannerImage || game.image].filter(Boolean)
   const trailerPreview = galleryImages[0] || game.bannerImage || game.image
   const steamUrl = game.steamAppId
     ? `https://store.steampowered.com/app/${game.steamAppId}`
@@ -501,15 +523,11 @@ export const GameDetails: React.FC = () => {
                     {statusSummary.want_to_play}
                   </span>
                   <span className="flex items-center gap-1">
-                    <BarChart2 className="w-4 h-4" /> {averageRating}
+                    <Play className="w-4 h-4" /> {statusSummary.playing}
                   </span>
-                  <button
-                    title="Open statistics"
-                    aria-label="Open statistics"
-                    className="p-2 border border-gray-700 rounded-full hover:bg-gray-800 transition-colors"
-                  >
-                    <BarChart2 className="w-4 h-4" />
-                  </button>
+                  <span className="flex items-center gap-1">
+                    <Check className="w-4 h-4" /> {statusSummary.played}
+                  </span>
                 </div>
               </div>
             </div>
@@ -524,12 +542,14 @@ export const GameDetails: React.FC = () => {
             <div className="bg-cardBg border border-gray-800 rounded-lg p-5">
               <h3 className="text-white font-bold mb-3">Ma note</h3>
 
-              <button
-                onClick={openReviewForm}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded mb-4 transition-colors"
-              >
-                ÉCRIRE UNE CRITIQUE
-              </button>
+              {canWriteReview && (
+                <button
+                  onClick={openReviewForm}
+                  className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded mb-4 transition-colors"
+                >
+                  ÉCRIRE UNE CRITIQUE
+                </button>
+              )}
 
               {statusError && (
                 <div className="mb-3 rounded border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
@@ -571,23 +591,49 @@ export const GameDetails: React.FC = () => {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-10">
             {/* Game Info */}
-            <section className="text-gray-300 text-sm leading-relaxed space-y-4">
-              <p>
-                Jeu de <span className="text-white">{game.developer}</span> •{' '}
-                {game.platform.length > 0
-                  ? game.platform.join(', ')
-                  : 'Platforms unavailable'}{' '}
-                • {formattedDate} (France)
-              </p>
-              <p>
-                <span className="text-white font-medium">Genres :</span>{' '}
-                {game.genre}
-              </p>
-              <span className="text-blue-400 block mb-4">
-                Toutes les informations
-              </span>
+            <section className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="rounded-lg border border-gray-800 bg-cardBg px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-1">
+                    Studio
+                  </p>
+                  <p className="text-sm text-gray-100">{developerLabel}</p>
+                </div>
+                <div className="rounded-lg border border-gray-800 bg-cardBg px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-1">
+                    Date de sortie
+                  </p>
+                  <p className="text-sm text-gray-100">{formattedDate}</p>
+                </div>
+                <div className="rounded-lg border border-gray-800 bg-cardBg px-4 py-3 sm:col-span-2 lg:col-span-1">
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 mb-1">
+                    Genre
+                  </p>
+                  <p className="text-sm text-gray-100">{genreLabel}</p>
+                </div>
+              </div>
 
-              <p className="text-base">{game.description}</p>
+              <div className="rounded-xl border border-gray-800 bg-cardBg/70 p-5">
+                <div className="pb-4 border-b border-gray-800">
+                  <p className="mb-2 text-[11px] uppercase tracking-wider text-gray-500">
+                    Plateformes
+                  </p>
+                  <p className="text-sm text-gray-200">
+                    {platforms.length > 0
+                      ? platforms.join(' • ')
+                      : 'Platforms unavailable'}
+                  </p>
+                </div>
+
+                <div className="pt-4">
+                  <p className="mb-2 text-[11px] uppercase tracking-wider text-gray-500">
+                    Description
+                  </p>
+                  <p className="text-base leading-relaxed text-gray-100">
+                    {descriptionLabel}
+                  </p>
+                </div>
+              </div>
             </section>
 
             {/* Media Section */}
@@ -619,11 +665,10 @@ export const GameDetails: React.FC = () => {
               </div>
 
               <div>
-                <div className="flex justify-between items-center mb-4">
+                <div className="mb-4">
                   <h3 className="text-white font-bold uppercase tracking-wider">
                     Images
                   </h3>
-                  <span className="text-blue-400 text-sm">Voir les images</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {galleryImages.slice(0, 6).map((imageUrl, index) => (
@@ -650,12 +695,14 @@ export const GameDetails: React.FC = () => {
                 <h2 className="text-lg font-bold text-white uppercase tracking-wider">
                   Critiques : Avis d'internautes ({reviews.length})
                 </h2>
-                <button
-                  onClick={openReviewForm}
-                  className="text-sm text-blue-400 hover:underline"
-                >
-                  Écrire une critique
-                </button>
+                {canWriteReview && (
+                  <button
+                    onClick={openReviewForm}
+                    className="text-sm text-blue-400 hover:underline"
+                  >
+                    Écrire une critique
+                  </button>
+                )}
               </div>
 
               {reviewError && (
@@ -775,16 +822,20 @@ export const GameDetails: React.FC = () => {
                 <select
                   title="Sort reviews"
                   aria-label="Sort reviews"
+                  value={reviewSort}
+                  onChange={(event) =>
+                    setReviewSort(event.target.value as ReviewSortOption)
+                  }
                   className="bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded px-3 py-1.5 focus:outline-none focus:border-gray-500"
                 >
-                  <option>Recommandées</option>
-                  <option>Plus récentes</option>
-                  <option>Mieux notées</option>
+                  <option value="recommended">Recommandées</option>
+                  <option value="latest">Plus récentes</option>
+                  <option value="top_rated">Mieux notées</option>
                 </select>
               </div>
 
               <div className="space-y-4">
-                {reviews.map((review) => (
+                {sortedReviews.map((review) => (
                   <div
                     key={review.id}
                     id={`review-${review.id}`}
