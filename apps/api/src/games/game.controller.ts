@@ -3,7 +3,12 @@ import type { RequestHandler } from 'express'
 import { ApiError } from '../utils/errors.js'
 import service from './game.service.js'
 
-const gameController: Record<string, RequestHandler> = {
+type ControllerHandlers = {
+  getAll: RequestHandler
+  getOne: RequestHandler
+}
+
+const gameController: ControllerHandlers = {
   getAll: async (_req, res, next) => {
     try {
       const games = await service.getAll()
