@@ -16,12 +16,12 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   return (
     <motion.div
       whileHover={{
-        y: -4
+        scale: 1.03
       }}
       transition={{
-        duration: 0.2
+        duration: 0.22
       }}
-      className="group relative flex flex-col h-full w-full max-w-[200px] shrink-0"
+      className="group relative flex flex-col h-full w-full max-w-[200px] shrink-0 origin-center"
     >
       <Link
         to={`/games/${encodeURIComponent(game.slug)}`}
@@ -33,7 +33,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
             <img
               src={game.image}
               alt={game.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="flex h-full w-full items-end p-4">

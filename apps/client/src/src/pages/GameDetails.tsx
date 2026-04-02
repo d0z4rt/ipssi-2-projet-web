@@ -297,29 +297,6 @@ export const GameDetails: React.FC = () => {
                 </button>
               </div>
             </div>
-
-            <div>
-              <h3 className="text-white font-bold mb-3 uppercase text-sm tracking-wider">
-                Accès Rapide
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <span className="text-blue-400">Description</span>
-                </li>
-                <li>
-                  <span className="text-blue-400">Medias</span>
-                </li>
-                <li>
-                  <span className="text-blue-400">Tops</span>
-                </li>
-                <li>
-                  <span className="text-blue-400">Critiques</span>
-                </li>
-                <li>
-                  <span className="text-blue-400">Listes</span>
-                </li>
-              </ul>
-            </div>
           </div>
 
           {/* Main Content */}

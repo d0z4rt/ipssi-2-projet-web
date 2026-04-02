@@ -35,11 +35,6 @@ export const Navbar: React.FC = () => {
         name: 'Admin',
         path: '/admin'
       })
-    } else if (user?.role === 'curator') {
-      navLinks.push({
-        name: 'Curator',
-        path: '/dashboard'
-      })
     }
   }
   const isActive = (path: string) => location.pathname === path
@@ -174,7 +169,7 @@ export const Navbar: React.FC = () => {
                           {user?.username}
                         </div>
                         <div className="text-sm font-medium text-gray-400">
-                          {user?.email}
+                          {user?.username}
                         </div>
                         <div className="mt-1 inline-flex rounded bg-gray-800 px-2 py-0.5 text-[10px] uppercase tracking-wider text-gray-400">
                           {user?.role}

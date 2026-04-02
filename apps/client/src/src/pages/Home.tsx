@@ -44,7 +44,11 @@ export const Home: React.FC = () => {
     featuredGame?.bannerImage ||
     featuredGame?.image ||
     '/CrimsonDesert.png'
+  const featuredSteamFromAppId = featuredGame?.steamAppId
+    ? `https://store.steampowered.com/app/${featuredGame.steamAppId}`
+    : null
   const featuredSteamUrl =
+    featuredSteamFromAppId ||
     (featuredGame && steamStoreByGameId[featuredGame.id]) ||
     'https://store.steampowered.com'
   useEffect(() => {
@@ -58,8 +62,7 @@ export const Home: React.FC = () => {
         setTrendingGames(trending)
         setLatestReleases(releases)
         setPopularReviews(reviews)
-      } catch (error) {
-        console.error('Failed to fetch home data', error)
+      } catch {
       } finally {
         setLoading(false)
       }
@@ -165,22 +168,22 @@ export const Home: React.FC = () => {
             </Link>
           </div>
 
-          <div className="relative group">
+          <div className="relative group/carousel">
             <button
               onClick={() => scroll(trendingRef, 'left')}
               title="Voir les jeux précédents"
               aria-label="Voir les jeux précédents"
-              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-800"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
             <div
               ref={trendingRef}
-              className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide"
+              className="flex gap-2 overflow-x-auto py-2 snap-x scrollbar-hide"
             >
               {trendingGames.map((game) => (
-                <div key={game.id} className="snap-start">
+                <div key={game.id} className="snap-start p-1">
                   <GameCard game={game} />
                 </div>
               ))}
@@ -190,7 +193,7 @@ export const Home: React.FC = () => {
               onClick={() => scroll(trendingRef, 'right')}
               title="Voir les jeux suivants"
               aria-label="Voir les jeux suivants"
-              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-800"
+              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -211,22 +214,22 @@ export const Home: React.FC = () => {
             </Link>
           </div>
 
-          <div className="relative group">
+          <div className="relative group/carousel">
             <button
               onClick={() => scroll(releasesRef, 'left')}
               title="Voir les sorties précédentes"
               aria-label="Voir les sorties précédentes"
-              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-800"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
             <div
               ref={releasesRef}
-              className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide"
+              className="flex gap-2 overflow-x-auto py-2 snap-x scrollbar-hide"
             >
               {latestReleases.map((game) => (
-                <div key={game.id} className="snap-start">
+                <div key={game.id} className="snap-start p-1">
                   <GameCard game={game} />
                 </div>
               ))}
@@ -236,7 +239,7 @@ export const Home: React.FC = () => {
               onClick={() => scroll(releasesRef, 'right')}
               title="Voir les sorties suivantes"
               aria-label="Voir les sorties suivantes"
-              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-800"
+              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -251,12 +254,12 @@ export const Home: React.FC = () => {
             </h2>
           </div>
 
-          <div className="relative group">
+          <div className="relative group/carousel">
             <button
               onClick={() => scroll(reviewsRef, 'left')}
               title="Voir les critiques précédentes"
               aria-label="Voir les critiques précédentes"
-              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-800"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -276,7 +279,7 @@ export const Home: React.FC = () => {
               onClick={() => scroll(reviewsRef, 'right')}
               title="Voir les critiques suivantes"
               aria-label="Voir les critiques suivantes"
-              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-800"
+              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
             >
               <ChevronRight className="w-5 h-5" />
             </button>

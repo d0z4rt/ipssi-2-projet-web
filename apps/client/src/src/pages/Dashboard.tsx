@@ -33,7 +33,7 @@ export const Dashboard: React.FC = () => {
         try {
           const reviews = await reviewService.getUserReviews(user.id)
           setUserReviews(reviews)
-        } catch (error) {
+        } catch {
         } finally {
           setLoading(false)
         }
@@ -153,11 +153,6 @@ export const Dashboard: React.FC = () => {
             <span className="px-2 py-0.5 bg-gray-800 rounded text-xs ml-2 uppercase tracking-wider">
               {user?.role}
             </span>
-            {user?.isCurator && (
-              <span className="px-2 py-0.5 bg-accent/10 text-accent rounded text-xs ml-2 uppercase tracking-wider">
-                curator mode
-              </span>
-            )}
           </p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Heart, MessageSquare } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -50,6 +50,10 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
       year: 'numeric'
     }).format(date)
   }
+
+  const gameSlugOrId = getGameSlugById(localReview.gameId) || localReview.gameId
+  const reviewUrl = `/games/${encodeURIComponent(gameSlugOrId)}#review-${localReview.id}`
+
   return (
     <motion.div
       initial={{
@@ -118,9 +122,14 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
         <p className="text-gray-300 text-sm leading-relaxed mb-3 line-clamp-4">
           {localReview.content}
         </p>
-        <button className="text-blue-400 text-sm hover:underline mb-4">
-          Lire la critique
-        </button>
+        {showGameInfo && (
+          <Link
+            to={reviewUrl}
+            className="inline-flex text-blue-400 text-sm hover:underline mb-4"
+          >
+            Lire la critique
+          </Link>
+        )}
       </div>
 
       {/* Footer */}
@@ -156,11 +165,6 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
             </motion.div>
             <span>{localReview.likes} j'aime</span>
           </motion.button>
-
-          <button className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-white transition-colors">
-            <MessageSquare className="w-4 h-4" />
-            <span>Commenter</span>
-          </button>
         </div>
       </div>
     </motion.div>

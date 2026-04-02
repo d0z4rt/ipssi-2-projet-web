@@ -3,7 +3,6 @@ import {
   Users,
   Gamepad2,
   MessageSquare,
-  AlertTriangle,
   Edit,
   Trash2
 } from 'lucide-react'
@@ -27,8 +26,7 @@ export const Admin: React.FC = () => {
   const [stats, setStats] = useState({
     users: null as number | null,
     games: 0,
-    reviews: 0,
-    reported: null as number | null
+    reviews: 0
   })
   const [games, setGames] = useState<Game[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
@@ -48,13 +46,12 @@ export const Admin: React.FC = () => {
         setStats({
           users: appStats.totalUsers,
           games: appStats.totalGames,
-          reviews: appStats.totalReviews,
-          reported: appStats.reportedReviews
+          reviews: appStats.totalReviews
         })
         setGames(gamesData)
         setReviews(reviewsData)
         setUsers(usersData)
-      } catch (error) {
+      } catch {
       } finally {
         setLoading(false)
       }
@@ -120,7 +117,7 @@ export const Admin: React.FC = () => {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="bg-cardBg border border-gray-800 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-gray-400 font-medium">Total Users</h3>
@@ -150,25 +147,9 @@ export const Admin: React.FC = () => {
                     {stats.reviews.toLocaleString()}
                   </p>
                 </div>
-
-                <div className="bg-cardBg border border-red-500/30 rounded-xl p-6 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-gray-400 font-medium">
-                      Reported Content
-                    </h3>
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
-                  </div>
-                  <p className="text-3xl font-orbitron font-bold text-white">
-                    {stats.reported == null ? 'Pending' : stats.reported}
-                  </p>
-                  <button className="mt-4 text-xs text-red-400 hover:text-red-300 font-medium">
-                    Review Now &rarr;
-                  </button>
-                </div>
               </div>
 
-              <div className="sm:col-span-2 lg:col-span-4 bg-cardBg border border-gray-800 rounded-xl overflow-hidden">
+              <div className="mt-6 sm:col-span-2 lg:col-span-4 bg-cardBg border border-gray-800 rounded-xl overflow-hidden">
                 <div className="p-4 border-b border-gray-800 flex items-center justify-between">
                   <h2 className="font-medium text-white">Users</h2>
                   <span className="text-xs text-gray-500 uppercase tracking-wider">

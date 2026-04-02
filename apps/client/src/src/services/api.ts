@@ -34,6 +34,7 @@ export interface Game {
   id: string
   slug: string
   title: string
+  steamAppId?: string
   description: string
   genre: string
   platform: string[]
@@ -108,6 +109,7 @@ type ApiGame = {
   id: string
   slug: string
   name: string
+  steam_app_id?: number | string | null
   description: string | null
   cover_image: string | null
   banner_image: string | null
@@ -286,6 +288,7 @@ const mapGame = (game: ApiGame, stats?: GameStats): Game => ({
   id: game.id,
   slug: game.slug || normalizeSlug(game.name),
   title: game.name,
+  steamAppId: game.steam_app_id == null ? undefined : String(game.steam_app_id),
   description: game.description ?? '',
   genre: game.categories?.[0] ?? 'Unknown',
   platform: game.platforms ?? [],
