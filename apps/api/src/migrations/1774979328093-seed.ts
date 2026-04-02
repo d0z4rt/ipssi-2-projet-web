@@ -1,5 +1,6 @@
 // oxlint-disable no-console
 import { categoriesSeed, gamesSeed } from '#MOCK/gamesSeed.js'
+import { reviewsSeed } from '#MOCK/reviewsSeed.js'
 import { MigrationInterface, QueryRunner } from 'typeorm'
 
 const usersSeed = [
@@ -56,44 +57,7 @@ const tagsSeed = [
   { name: 'Excellent Combat' }
 ]
 
-// Review templates for random generation
-const reviewTitles = [
-  'Amazing Game!',
-  'Worth Every Penny',
-  'Could Be Better',
-  'Disappointing Experience',
-  'Hidden Gem',
-  'Overhyped',
-  'Masterpiece',
-  'Solid Experience',
-  'Not For Everyone',
-  'Absolute Must Play',
-  'Mediocre at Best',
-  'Exceeded Expectations',
-  'Technical Mess',
-  'Pure Joy',
-  'Time Well Spent'
-]
-
-const reviewContents = [
-  'This game completely blew me away. The attention to detail is incredible.',
-  'Had a great time with this one. Would recommend to any fan of the genre.',
-  'The gameplay is fun but the story falls flat. Still worth checking out.',
-  'Technical issues aside, this is a fantastic experience.',
-  'Overrated in my opinion. Expected much more from all the hype.',
-  'A hidden gem that more people should know about.',
-  'The graphics are stunning but the gameplay gets repetitive.',
-  'Absolutely loved every minute of it. Cant wait for more content.',
-  'Its okay, nothing special. Play it on sale.',
-  'One of the best games I have ever played. Truly remarkable.',
-  'Buggy and unfinished. Should have been delayed.',
-  'The soundtrack alone makes this worth playing.',
-  'Great concepts but poor execution. So much potential wasted.',
-  'Finally a game that respects my time and money.',
-  'The multiplayer aspect is great but single-player is lacking.'
-]
-
-const reviewRatings = [5, 6, 7, 8, 9, 10]
+const reviewRatings = [3, 4, 5, 6, 7, 8, 9, 10]
 
 // Helper function to get random items from array
 const getRandomItems = <T>(arr: T[], min: number = 1, max: number = 3): T[] => {
@@ -118,14 +82,13 @@ const generateRandomReviews = () => {
 
     for (let i = 0; i < numReviews; i++) {
       const randomUsername = getRandomElement(allUsernames)
-      const randomTitle = getRandomElement(reviewTitles)
-      const randomContent = getRandomElement(reviewContents)
+      const randomReview = getRandomElement(reviewsSeed)
       const randomRating = getRandomElement(reviewRatings)
       const randomTags = getRandomItems(allTags, 1, 3) // 1-3 tags per review
 
       generatedReviews.push({
-        title: randomTitle,
-        content: randomContent,
+        title: randomReview.title,
+        content: randomReview.content,
         rating: randomRating,
         game_slug: game.slug,
         username: randomUsername,
