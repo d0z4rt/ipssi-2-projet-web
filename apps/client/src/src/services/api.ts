@@ -48,6 +48,15 @@ export interface Game {
   likeCount?: number
 }
 
+export type GameUserStatus = 'played' | 'want_to_play' | 'playing' | 'favorite'
+
+export type GameStatusSummary = Record<GameUserStatus, number>
+
+export interface UserGameWithStatuses {
+  game: Game
+  statuses: GameUserStatus[]
+}
+
 export interface Review {
   id: string
   gameId: string
@@ -140,6 +149,19 @@ type ApiReview = {
   created_at: string
   likes?: number | ApiLike[] | null
   reviews_to_tags?: ApiReviewTag[] | null
+}
+
+type ApiGameStatusesResponse = {
+  statuses: GameUserStatus[]
+}
+
+type ApiGameStatusSummaryResponse = {
+  summary: GameStatusSummary
+}
+
+type ApiUserGameWithStatuses = {
+  game: ApiGame
+  statuses: GameUserStatus[]
 }
 
 type Catalog = {
@@ -565,6 +587,86 @@ export const gameService = {
           new Date(left.releaseDate).getTime()
       )
       .slice(0, 5)
+  },
+
+  getMyStatuses: async (gameId: string): Promise<GameUserStatus[]> => {
+    try {
+      const response = await api.get<ApiGameStatusesResponse>(
+        `/v1/games/${gameId}/status`,
+        {
+          headers: getAuthHeaders()
+        }
+      )
+      return response.data.statuses
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(
+          error,
+          'Unable to retrieve your statuses for this game'
+        )
+      )
+    }
+  },
+
+  getStatusSummary: async (gameId: string): Promise<GameStatusSummary> => {
+    try {
+      const response = await api.get<ApiGameStatusSummaryResponse>(
+        `/v1/games/${gameId}/status/summary`
+      )
+
+      return response.data.summary
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, 'Unable to retrieve game status summary')
+      )
+    }
+  },
+
+  setMyStatus: async (
+    gameId: string,
+    status: GameUserStatus,
+    active: boolean
+  ): Promise<GameUserStatus[]> => {
+    try {
+      const response = await api.put<ApiGameStatusesResponse>(
+        `/v1/games/${gameId}/status`,
+        {
+          status,
+          active
+        },
+        {
+          headers: getAuthHeaders()
+        }
+      )
+      return response.data.statuses
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, 'Unable to update your game status')
+      )
+    }
+  },
+
+  getMyGamesWithStatuses: async (): Promise<UserGameWithStatuses[]> => {
+    try {
+      const response = await api.get<ApiUserGameWithStatuses[]>(
+        '/v1/games/statuses/me',
+        {
+          headers: getAuthHeaders()
+        }
+      )
+
+      return response.data.map((entry) => ({
+        game: mapGame(entry.game),
+        statuses: entry.statuses
+      }))
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(
+          error,
+          'Unable to retrieve your personal game statuses'
+        )
+      )
+    }
   }
 }
 

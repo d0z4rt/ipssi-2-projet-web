@@ -8,6 +8,7 @@ import {
 } from 'typeorm'
 
 import { GameToCategory } from './gameToCategory.entity.js'
+import { GameUserStatus } from './gameUserStatus.entity.js'
 
 @Entity('games')
 export class Game {
@@ -53,6 +54,9 @@ export class Game {
 
   @OneToMany(() => Review, (review) => review.game)
   reviews: Review[] | null = null
+
+  @OneToMany(() => GameUserStatus, (gameUserStatus) => gameUserStatus.game)
+  user_statuses: GameUserStatus[] | null = null
 
   @CreateDateColumn({
     type: 'timestamptz',
