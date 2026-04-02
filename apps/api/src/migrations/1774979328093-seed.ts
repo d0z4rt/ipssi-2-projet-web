@@ -1,52 +1,6 @@
-import { Game } from '#games/game.entity.js'
+// oxlint-disable no-console
+import { categoriesSeed, gamesSeed } from '#MOCK/gamesSeed.js'
 import { MigrationInterface, QueryRunner } from 'typeorm'
-
-const gamesSeed: Omit<Game, 'id' | 'created_at' | 'toJSON'>[] = [
-  {
-    name: 'The Witcher 3',
-    slug: 'the-witcher-3',
-    description: 'A fantasy RPG set in a vast open world.',
-    developer: 'CD Projekt Red',
-    released_at: new Date('2015-05-18'),
-    categories: ['RPG', 'Action'],
-    cover_image: null,
-    banner_image: null,
-    screenshots: null,
-    platforms: null,
-    games_to_categories: null,
-    reviews: null
-  },
-  {
-    name: 'Cyberpunk 2077',
-    slug: 'cyberpunk-2077',
-    description: 'An open-world action RPG set in a futuristic metropolis.',
-    developer: 'CD Projekt Red',
-    released_at: new Date('2020-12-10'),
-    categories: ['RPG', 'Action'],
-    cover_image: null,
-    banner_image: null,
-    screenshots: null,
-    platforms: null,
-    games_to_categories: null,
-    reviews: null
-  },
-  {
-    name: "Baldur's Gate 3",
-    slug: 'baldur-s-gate-3',
-    description: 'A deep RPG based on D&D 5th edition rules.',
-    developer: 'Larian Studios',
-    released_at: new Date('2023-08-03'),
-    categories: ['RPG', 'Strategy'],
-    cover_image: null,
-    banner_image: null,
-    screenshots: null,
-    platforms: null,
-    games_to_categories: null,
-    reviews: null
-  }
-]
-
-const categoriesSeed = ['RPG', 'Action', 'Adventure', 'Strategy', 'Sports']
 
 const usersSeed = [
   {
@@ -90,62 +44,97 @@ const tagsSeed = [
   { name: 'Excellent Combat' }
 ]
 
-const reviewsSeed = [
-  {
-    title: 'A True Masterpiece',
-    content:
-      'One of the best RPGs ever made. The story, characters, and world-building are exceptional.',
-    rating: 10,
-    game_slug: 'the-witcher-3',
-    username: 'john_doe',
-    tags: ['Masterpiece', 'Great Story', 'Excellent Combat']
-  },
-  {
-    title: 'Great Game, Some Issues',
-    content: 'The game is amazing but had some technical problems at launch.',
-    rating: 8,
-    game_slug: 'cyberpunk-2077',
-    username: 'jane_smith',
-    tags: ['Beautiful Graphics', 'Buggy']
-  },
-  {
-    title: 'Best RPG of the Decade',
-    content:
-      "Baldur's Gate 3 sets a new standard for RPGs. Incredible freedom and depth.",
-    rating: 10,
-    game_slug: 'baldur-s-gate-3',
-    username: 'game_master',
-    tags: ['Masterpiece', 'Must Play']
-  },
-  {
-    title: 'Overhyped but Still Good',
-    content: "Enjoyed my time with it, but didn't live up to the expectations.",
-    rating: 7,
-    game_slug: 'cyberpunk-2077',
-    username: 'casual_gamer',
-    tags: ['Overrated', 'Beautiful Graphics']
-  },
-  {
-    title: 'Incredible Storytelling',
-    content:
-      'The writing and characters are phenomenal. A must-play for any RPG fan.',
-    rating: 9,
-    game_slug: 'the-witcher-3',
-    username: 'game_master',
-    tags: ['Great Story', 'Must Play']
-  },
-  {
-    title: 'Disappointing Launch',
-    content: 'The game was released too early. Should have been delayed.',
-    rating: 6,
-    game_slug: 'cyberpunk-2077',
-    username: 'john_doe',
-    tags: ['Disappointing', 'Buggy']
-  }
+// Review templates for random generation
+const reviewTitles = [
+  'Amazing Game!',
+  'Worth Every Penny',
+  'Could Be Better',
+  'Disappointing Experience',
+  'Hidden Gem',
+  'Overhyped',
+  'Masterpiece',
+  'Solid Experience',
+  'Not For Everyone',
+  'Absolute Must Play',
+  'Mediocre at Best',
+  'Exceeded Expectations',
+  'Technical Mess',
+  'Pure Joy',
+  'Time Well Spent'
 ]
+
+const reviewContents = [
+  'This game completely blew me away. The attention to detail is incredible.',
+  'Had a great time with this one. Would recommend to any fan of the genre.',
+  'The gameplay is fun but the story falls flat. Still worth checking out.',
+  'Technical issues aside, this is a fantastic experience.',
+  'Overrated in my opinion. Expected much more from all the hype.',
+  'A hidden gem that more people should know about.',
+  'The graphics are stunning but the gameplay gets repetitive.',
+  'Absolutely loved every minute of it. Cant wait for more content.',
+  'Its okay, nothing special. Play it on sale.',
+  'One of the best games I have ever played. Truly remarkable.',
+  'Buggy and unfinished. Should have been delayed.',
+  'The soundtrack alone makes this worth playing.',
+  'Great concepts but poor execution. So much potential wasted.',
+  'Finally a game that respects my time and money.',
+  'The multiplayer aspect is great but single-player is lacking.'
+]
+
+const reviewRatings = [5, 6, 7, 8, 9, 10]
+
+// Helper function to get random items from array
+const getRandomItems = <T>(arr: T[], min: number = 1, max: number = 3): T[] => {
+  const count = Math.floor(Math.random() * (max - min + 1)) + min
+  return [...arr].sort(() => Math.random() - 0.5).slice(0, count)
+}
+
+// Helper function to get random element
+const getRandomElement = <T>(arr: T[]): T => {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+// Generate random reviews for each game
+const generateRandomReviews = () => {
+  const generatedReviews = []
+  const allUsernames = usersSeed.map((u) => u.username)
+  const allTags = tagsSeed.map((t) => t.name)
+
+  for (const game of gamesSeed) {
+    // Each game gets between 2 and 5 random reviews
+    const numReviews = Math.floor(Math.random() * 4) + 2 // 2-5 reviews per game
+
+    for (let i = 0; i < numReviews; i++) {
+      const randomUsername = getRandomElement(allUsernames)
+      const randomTitle = getRandomElement(reviewTitles)
+      const randomContent = getRandomElement(reviewContents)
+      const randomRating = getRandomElement(reviewRatings)
+      const randomTags = getRandomItems(allTags, 1, 3) // 1-3 tags per review
+
+      generatedReviews.push({
+        title: randomTitle,
+        content: randomContent,
+        rating: randomRating,
+        game_slug: game.slug,
+        username: randomUsername,
+        tags: randomTags
+      })
+    }
+  }
+
+  return generatedReviews
+}
 
 export class Seed1774979328093 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`TRUNCATE TABLE reviews_tags CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE reviews CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE games_categories CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE games CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE users CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE tags CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE categories CASCADE`)
+
     // Insert categories
     for (const categoryName of categoriesSeed) {
       await queryRunner.query(
@@ -163,12 +152,16 @@ export class Seed1774979328093 implements MigrationInterface {
     const insertedGames = new Map()
     for (const game of gamesSeed) {
       const result = await queryRunner.query(
-        `INSERT INTO games (name, slug, description, developer, released_at, created_at)
-            VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING id`,
+        `INSERT INTO games (name, slug, description, cover_image, banner_image, screenshots, platforms, developer, released_at, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) RETURNING id`,
         [
           game.name,
           game.slug,
           game.description,
+          game.cover_image,
+          game.banner_image,
+          game.screenshots,
+          game.platforms,
           game.developer,
           game.released_at
         ]
@@ -216,13 +209,15 @@ export class Seed1774979328093 implements MigrationInterface {
       insertedTags.set(tag.name, result[0].id)
     }
 
+    // Regenerate reviews to ensure they match current inserted data
+    const finalReviewsSeed = generateRandomReviews()
+
     // Insert reviews and their tags
-    for (const review of reviewsSeed) {
+    for (const review of finalReviewsSeed) {
       const gameId = insertedGames.get(review.game_slug)
       const userId = insertedUsers.get(review.username)
 
       if (!gameId || !userId) {
-        // oxlint-disable-next-line no-console
         console.warn(`Skipping review "${review.title}" - missing game or user`)
         continue
       }
@@ -247,52 +242,20 @@ export class Seed1774979328093 implements MigrationInterface {
         }
       }
     }
+
+    console.log(
+      `Seeded ${gamesSeed.length} games with ${finalReviewsSeed.length} total reviews`
+    )
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Delete reviews_tags associations
-    const reviewsToDelete = reviewsSeed.map((r) => `'${r.title}'`).join(', ')
-    await queryRunner.query(`
-      DELETE FROM reviews_tags
-      WHERE review_id IN (
-        SELECT id FROM reviews WHERE title IN (${reviewsToDelete})
-      )
-    `)
-
-    // Delete reviews
-    await queryRunner.query(`
-      DELETE FROM reviews WHERE title IN (${reviewsToDelete})
-    `)
-
-    // Delete users
-    const usersToDelete = usersSeed.map((u) => `'${u.username}'`).join(', ')
-    await queryRunner.query(`
-      DELETE FROM users WHERE username IN (${usersToDelete})
-    `)
-
-    // Delete tags
-    const tagsToDelete = tagsSeed.map((t) => `'${t.name}'`).join(', ')
-    await queryRunner.query(`
-      DELETE FROM tags WHERE name IN (${tagsToDelete})
-    `)
-
-    // Delete games_categories associations
-    const gamesToDelete = gamesSeed.map((g) => `'${g.name}'`).join(', ')
-    await queryRunner.query(`
-      DELETE FROM games_categories
-      WHERE game_id IN (
-        SELECT id FROM games WHERE name IN (${gamesToDelete})
-      )
-    `)
-
-    // Delete games
-    await queryRunner.query(`
-      DELETE FROM games WHERE name IN (${gamesToDelete})
-    `)
-
-    // Delete categories
-    await queryRunner.query(`
-      DELETE FROM categories WHERE name IN (${categoriesSeed.map((c) => `'${c}'`).join(', ')})
-    `)
+    // Delete all data (simpler than trying to track individual items)
+    await queryRunner.query(`TRUNCATE TABLE reviews_tags CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE reviews CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE games_categories CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE games CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE users CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE tags CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE categories CASCADE`)
   }
 }
