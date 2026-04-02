@@ -1,17 +1,27 @@
 import { Check, Heart, Bookmark, ListPlus, Play, BarChart2 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 import { getRatingColor } from '../components/GameCard'
 import { ReviewCard } from '../components/ReviewCard'
+import { useAuth } from '../context/AuthContext'
 import { Game, Review, gameService, reviewService } from '../services/api'
 export const GameDetails: React.FC = () => {
+  const { isAuthenticated, user } = useAuth()
+  const location = useLocation()
   const { slug } = useParams<{
     slug: string
   }>()
   const [game, setGame] = useState<Game | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+  const [isReviewFormOpen, setIsReviewFormOpen] = useState(false)
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+  const [reviewError, setReviewError] = useState('')
+  const [reviewTitle, setReviewTitle] = useState('')
+  const [reviewRating, setReviewRating] = useState(7)
+  const [reviewContent, setReviewContent] = useState('')
+  const [reviewTags, setReviewTags] = useState('')
   useEffect(() => {
     const fetchGameData = async () => {
       if (!slug) return
@@ -24,17 +34,36 @@ export const GameDetails: React.FC = () => {
           return
         }
 
-        const reviewsData = await reviewService.getReviewsByGame(gameData.id)
         setGame(gameData)
-        setReviews(reviewsData)
-      } catch (error) {
-        console.error('Failed to fetch game details', error)
+
+        try {
+          const reviewsData = await reviewService.getReviewsByGame(gameData.id)
+          setReviews(reviewsData)
+        } catch {
+          setReviews([])
+        }
+      } catch {
+        setGame(null)
+        setReviews([])
       } finally {
         setLoading(false)
       }
     }
     fetchGameData()
   }, [slug])
+
+  useEffect(() => {
+    if (loading || reviews.length === 0) return
+
+    const hash = location.hash
+    if (!hash) return
+
+    const targetId = hash.startsWith('#') ? hash.slice(1) : hash
+    const target = document.getElementById(targetId)
+    if (!target) return
+
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [loading, location.hash, reviews])
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-darkBg">
@@ -42,7 +71,35 @@ export const GameDetails: React.FC = () => {
       </div>
     )
   }
-  if (!game) return null
+  if (!game) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-darkBg px-4">
+        <div className="max-w-lg rounded-xl border border-gray-800 bg-cardBg p-8 text-center">
+          <h1 className="text-2xl font-orbitron font-bold text-white mb-3">
+            Game not found
+          </h1>
+          <p className="text-gray-400 mb-6">
+            The selected game could not be loaded from the API.
+          </p>
+          <a
+            href="/games"
+            className="inline-flex items-center justify-center rounded-lg bg-accent px-5 py-2.5 font-bold text-darkBg hover:bg-accent/90 transition-colors"
+          >
+            Back to games
+          </a>
+        </div>
+      </div>
+    )
+  }
+  const reviewCount = reviews.length
+  const totalLikes = reviews.reduce((sum, review) => sum + review.likes, 0)
+  const averageRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((sum, review) => sum + review.rating, 0) /
+          reviews.length
+        ).toFixed(1)
+      : '0.0'
   const releaseYear = new Date(game.releaseDate).getFullYear()
   const formattedDate = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -59,17 +116,91 @@ export const GameDetails: React.FC = () => {
   ) => {
     event.currentTarget.src = game.image
   }
+
+  const canWriteReview = Boolean(
+    user && (user.role === 'admin' || user.isCurator)
+  )
+
+  const openReviewForm = () => {
+    setReviewError('')
+    if (!isAuthenticated) {
+      setReviewError('You need to log in to write a review.')
+      return
+    }
+    if (!canWriteReview) {
+      setReviewError('Only curator or admin accounts can publish reviews.')
+      return
+    }
+    setIsReviewFormOpen(true)
+  }
+
+  const resetReviewForm = () => {
+    setReviewTitle('')
+    setReviewRating(7)
+    setReviewContent('')
+    setReviewTags('')
+    setReviewError('')
+  }
+
+  const handleCreateReview = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!game) return
+
+    const title = reviewTitle.trim()
+    const content = reviewContent.trim()
+    const tags = reviewTags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+
+    if (!title) {
+      setReviewError('Title is required.')
+      return
+    }
+    if (reviewRating < 0 || reviewRating > 10) {
+      setReviewError('Rating must be between 0 and 10.')
+      return
+    }
+
+    setIsSubmittingReview(true)
+    setReviewError('')
+    try {
+      const createdReview = await reviewService.addReview({
+        title,
+        content,
+        rating: reviewRating,
+        gameId: game.id,
+        tags
+      })
+      setReviews((currentReviews) => [createdReview, ...currentReviews])
+      setIsReviewFormOpen(false)
+      resetReviewForm()
+    } catch (error) {
+      setReviewError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to publish review. Please try again.'
+      )
+    } finally {
+      setIsSubmittingReview(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-darkBg pb-20">
       {/* Hero Banner Area */}
       <div className="relative h-[400px] w-full bg-gray-900 border-b border-gray-800">
         <div className="absolute inset-0 overflow-hidden">
-          <img
-            src={game.bannerImage || game.image}
-            alt={game.title}
-            onError={handleImageFallback}
-            className="w-full h-full object-cover opacity-30 blur-sm"
-          />
+          {game.bannerImage || game.image ? (
+            <img
+              src={game.bannerImage || game.image}
+              alt={game.title}
+              onError={handleImageFallback}
+              className="w-full h-full object-cover opacity-30 blur-sm"
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-black via-gray-900 to-darkBg" />
+          )}
 
           <div className="absolute inset-0 bg-gradient-to-t from-darkBg to-transparent"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-darkBg via-darkBg/80 to-transparent"></div>
@@ -112,10 +243,13 @@ export const GameDetails: React.FC = () => {
 
                 <div className="flex items-center gap-4 text-sm text-gray-400">
                   <span className="flex items-center gap-1">
-                    <Heart className="w-4 h-4" /> 758
+                    <Heart className="w-4 h-4" /> {totalLikes}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Bookmark className="w-4 h-4" /> 9
+                    <Bookmark className="w-4 h-4" /> {reviewCount}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <BarChart2 className="w-4 h-4" /> {averageRating}
                   </span>
                   <button
                     title="Open statistics"
@@ -137,18 +271,11 @@ export const GameDetails: React.FC = () => {
           <div className="lg:col-span-1 space-y-8">
             <div className="bg-cardBg border border-gray-800 rounded-lg p-5">
               <h3 className="text-white font-bold mb-3">Ma note</h3>
-              <div className="flex justify-between mb-4 text-gray-600">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                  <span
-                    key={num}
-                    className="cursor-pointer hover:text-yellow-400 transition-colors"
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
 
-              <button className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded mb-4 transition-colors">
+              <button
+                onClick={openReviewForm}
+                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded mb-4 transition-colors"
+              >
                 ÉCRIRE UNE CRITIQUE
               </button>
 
@@ -177,29 +304,19 @@ export const GameDetails: React.FC = () => {
               </h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="text-blue-400 hover:underline">
-                    Description
-                  </a>
+                  <span className="text-blue-400">Description</span>
                 </li>
                 <li>
-                  <a href="#" className="text-blue-400 hover:underline">
-                    Medias
-                  </a>
+                  <span className="text-blue-400">Medias</span>
                 </li>
                 <li>
-                  <a href="#" className="text-blue-400 hover:underline">
-                    Tops
-                  </a>
+                  <span className="text-blue-400">Tops</span>
                 </li>
                 <li>
-                  <a href="#" className="text-blue-400 hover:underline">
-                    Critiques
-                  </a>
+                  <span className="text-blue-400">Critiques</span>
                 </li>
                 <li>
-                  <a href="#" className="text-blue-400 hover:underline">
-                    Listes
-                  </a>
+                  <span className="text-blue-400">Listes</span>
                 </li>
               </ul>
             </div>
@@ -211,15 +328,18 @@ export const GameDetails: React.FC = () => {
             <section className="text-gray-300 text-sm leading-relaxed space-y-4">
               <p>
                 Jeu de <span className="text-white">{game.developer}</span> •{' '}
-                {game.platform.join(', ')} • {formattedDate} (France)
+                {game.platform.length > 0
+                  ? game.platform.join(', ')
+                  : 'Platforms unavailable'}{' '}
+                • {formattedDate} (France)
               </p>
               <p>
                 <span className="text-white font-medium">Genres :</span>{' '}
                 {game.genre}
               </p>
-              <a href="#" className="text-blue-400 hover:underline block mb-4">
+              <span className="text-blue-400 block mb-4">
                 Toutes les informations
-              </a>
+              </span>
 
               <p className="text-base">{game.description}</p>
             </section>
@@ -257,9 +377,7 @@ export const GameDetails: React.FC = () => {
                   <h3 className="text-white font-bold uppercase tracking-wider">
                     Images
                   </h3>
-                  <a href="#" className="text-blue-400 text-sm hover:underline">
-                    Voir les images
-                  </a>
+                  <span className="text-blue-400 text-sm">Voir les images</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {galleryImages.slice(0, 6).map((imageUrl, index) => (
@@ -286,10 +404,126 @@ export const GameDetails: React.FC = () => {
                 <h2 className="text-lg font-bold text-white uppercase tracking-wider">
                   Critiques : Avis d'internautes ({reviews.length})
                 </h2>
-                <button className="text-sm text-blue-400 hover:underline">
+                <button
+                  onClick={openReviewForm}
+                  className="text-sm text-blue-400 hover:underline"
+                >
                   Écrire une critique
                 </button>
               </div>
+
+              {reviewError && (
+                <div className="mb-4 rounded border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  {reviewError}
+                </div>
+              )}
+
+              {isReviewFormOpen && (
+                <form
+                  onSubmit={handleCreateReview}
+                  className="mb-6 rounded-xl border border-gray-800 bg-cardBg p-5 space-y-4"
+                >
+                  <div>
+                    <label
+                      htmlFor="review-title"
+                      className="block mb-2 text-sm text-gray-300"
+                    >
+                      Title
+                    </label>
+                    <input
+                      id="review-title"
+                      type="text"
+                      value={reviewTitle}
+                      onChange={(event) => setReviewTitle(event.target.value)}
+                      className="w-full rounded-lg border border-gray-700 bg-darkBg px-3 py-2 text-white focus:outline-none focus:border-accent"
+                      placeholder="Your review title"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                      <span className="text-sm text-gray-300">Rating / 10</span>
+                      <span className="text-sm font-medium text-white">
+                        {reviewRating}/10
+                      </span>
+                    </div>
+                    <div
+                      className="grid grid-cols-10 gap-1"
+                      role="radiogroup"
+                      aria-label="Select review rating"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => {
+                        const isSelected = score <= reviewRating
+                        return (
+                          <button
+                            key={score}
+                            type="button"
+                            aria-label={`Set rating to ${score} out of 10`}
+                            onClick={() => setReviewRating(score)}
+                            className={`flex h-10 items-center justify-center rounded-md border transition-colors ${isSelected ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400' : 'border-gray-700 bg-darkBg text-gray-600 hover:border-gray-500 hover:text-gray-300'}`}
+                          >
+                            ★
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="review-content"
+                      className="block mb-2 text-sm text-gray-300"
+                    >
+                      Content
+                    </label>
+                    <textarea
+                      id="review-content"
+                      value={reviewContent}
+                      onChange={(event) => setReviewContent(event.target.value)}
+                      rows={4}
+                      className="w-full rounded-lg border border-gray-700 bg-darkBg px-3 py-2 text-white focus:outline-none focus:border-accent"
+                      placeholder="Share your experience with this game"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="review-tags"
+                      className="block mb-2 text-sm text-gray-300"
+                    >
+                      Tags (comma separated)
+                    </label>
+                    <input
+                      id="review-tags"
+                      type="text"
+                      value={reviewTags}
+                      onChange={(event) => setReviewTags(event.target.value)}
+                      className="w-full rounded-lg border border-gray-700 bg-darkBg px-3 py-2 text-white focus:outline-none focus:border-accent"
+                      placeholder="example: Masterpiece, Great Story"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="submit"
+                      disabled={isSubmittingReview}
+                      className="rounded-lg bg-accent px-4 py-2 text-darkBg font-bold hover:bg-accent/90 disabled:opacity-60"
+                    >
+                      {isSubmittingReview ? 'Publishing...' : 'Publish review'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsReviewFormOpen(false)
+                        setReviewError('')
+                      }}
+                      className="rounded-lg border border-gray-700 px-4 py-2 text-gray-300 hover:text-white hover:border-gray-500"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
 
               <div className="mb-6">
                 <select
@@ -305,11 +539,13 @@ export const GameDetails: React.FC = () => {
 
               <div className="space-y-4">
                 {reviews.map((review) => (
-                  <ReviewCard
+                  <div
                     key={review.id}
-                    review={review}
-                    showGameInfo={false}
-                  />
+                    id={`review-${review.id}`}
+                    className="scroll-mt-28"
+                  >
+                    <ReviewCard review={review} showGameInfo={false} />
+                  </div>
                 ))}
               </div>
             </section>

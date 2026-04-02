@@ -25,7 +25,7 @@ export const Login: React.FC = () => {
         replace: true
       })
     } catch (err) {
-      setError('Invalid email or password')
+      setError(err instanceof Error ? err.message : 'Invalid email or password')
     }
   }
   return (
@@ -69,7 +69,10 @@ export const Login: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label
+                htmlFor="login-email"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -77,6 +80,7 @@ export const Login: React.FC = () => {
                   <Mail className="h-5 w-5 text-gray-500" />
                 </div>
                 <input
+                  id="login-email"
                   type="email"
                   className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                   placeholder="gamer@example.com"
@@ -88,18 +92,25 @@ export const Login: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-300">
+                <label
+                  htmlFor="login-password"
+                  className="block text-sm font-medium text-gray-300"
+                >
                   Password
                 </label>
-                <a href="#" className="text-xs text-accent hover:underline">
+                <Link
+                  to="/contact-us"
+                  className="text-xs text-accent hover:underline"
+                >
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-500" />
                 </div>
                 <input
+                  id="login-password"
                   type="password"
                   className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                   placeholder="••••••••"
@@ -136,8 +147,8 @@ export const Login: React.FC = () => {
 
           {/* Demo Hint */}
           <div className="mt-6 pt-6 border-t border-gray-800 text-xs text-gray-500 text-center">
-            <p>Demo Admin: admin@test.com / any password</p>
-            <p>Demo User: any email / any password</p>
+            <p>Demo Admin: admin@test.com / admin123</p>
+            <p></p>
           </div>
         </div>
       </motion.div>

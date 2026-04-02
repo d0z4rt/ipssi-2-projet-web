@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Review, getGameSlugById, reviewService } from '../services/api'
-import { getRatingColor } from './GameCard'
 interface ReviewCardProps {
   review: Review
   onLikeUpdate?: (updatedReview: Review) => void
@@ -29,10 +28,13 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
       }
       setLocalReview(updated)
       // Actual API call
-      const serverUpdated = await reviewService.toggleLike(review.id)
+      const serverUpdated = await reviewService.toggleLike(
+        review.id,
+        localReview.liked
+      )
       setLocalReview(serverUpdated)
       if (onLikeUpdate) onLikeUpdate(serverUpdated)
-    } catch (error) {
+    } catch {
       // Revert on error
       setLocalReview(review)
     } finally {
@@ -63,12 +65,14 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
       {/* Game Info Header (Optional) */}
       {showGameInfo && localReview.gameTitle && (
         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-800/50">
-          {localReview.gameImage && (
+          {localReview.gameImage ? (
             <img
               src={localReview.gameImage}
               alt={localReview.gameTitle}
               className="w-10 h-14 object-cover rounded"
             />
+          ) : (
+            <div className="w-10 h-14 rounded bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700" />
           )}
           <Link
             to={`/games/${getGameSlugById(localReview.gameId) || localReview.gameId}`}

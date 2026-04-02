@@ -1,14 +1,35 @@
 import axios from 'axios'
 
-// Create Axios instance
+const API_BASE_URL =
+  (import.meta as ImportMeta & { env?: { VITE_API_URL?: string } }).env
+    ?.VITE_API_URL ?? 'http://localhost:4000'
+const AUTH_USER_KEY = 'gamecritiq_user'
+const AUTH_TOKEN_KEY = 'gamecritiq_token'
+
 export const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
   }
 })
 
-// Types
+type Role = 'user' | 'curator' | 'admin'
+
+export interface AuthUser {
+  id: string
+  username: string
+  email: string
+  role: Role
+  isCurator: boolean
+  isAdmin: boolean
+}
+
+export interface AuthSession {
+  token: string
+  expiresAt: string
+  user: AuthUser
+}
+
 export interface Game {
   id: string
   slug: string
@@ -16,12 +37,14 @@ export interface Game {
   description: string
   genre: string
   platform: string[]
-  rating: number // Out of 10
-  image: string // Portrait cover
-  bannerImage?: string // Landscape banner
-  screenshots?: string[] // Gallery screenshots
+  rating: number
+  image: string
+  bannerImage?: string
+  screenshots?: string[]
   releaseDate: string
   developer: string
+  reviewCount?: number
+  likeCount?: number
 }
 
 export interface Review {
@@ -32,13 +55,14 @@ export interface Review {
   userId: string
   username: string
   userReviewCount?: number
-  rating: number // Out of 10
+  rating: number
   title?: string
   content: string
   likes: number
   createdAt: string
   liked: boolean
   isPositive?: boolean
+  tags?: string[]
 }
 
 export interface ContactRequest {
@@ -57,415 +81,643 @@ export interface ContactResponse {
   createdAt: string
 }
 
-const mediaByGameId: Record<
-  string,
-  {
-    bannerImage: string
-    screenshots: string[]
-  }
-> = {
-  '1': {
-    bannerImage:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_943bf6fe62352757d9070c1d33e50b92fe8539f1.1920x1080.jpg?t=1767883716',
-    screenshots: [
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_943bf6fe62352757d9070c1d33e50b92fe8539f1.1920x1080.jpg?t=1767883716',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_dcdac9e4b26ac0ee5248bfd2967d764fd00cdb42.1920x1080.jpg?t=1767883716',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_3c41384a24d86dddd58a8f61db77f9dc0bfda8b5.1920x1080.jpg?t=1767883716',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_e0316c76f8197405c1312d072b84331dd735d60b.1920x1080.jpg?t=1767883716',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_ef61b771ee6b269b1f0cb484233e07a0bfb5f81b.1920x1080.jpg?t=1767883716',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_b1b91299d7e4b94201ac840aa64de54d9f5cb7f3.1920x1080.jpg?t=1767883716'
-    ]
-  },
-  '2': {
-    bannerImage:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_c73bc54415178c07fef85f54ee26621728c77504.1920x1080.jpg?t=1773079016',
-    screenshots: [
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_c73bc54415178c07fef85f54ee26621728c77504.1920x1080.jpg?t=1773079016',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_73d93bea842b93914d966622104dcb8c0f42972b.1920x1080.jpg?t=1773079016',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_cf936d31061b58e98e0c646aee00e6030c410cda.1920x1080.jpg?t=1773079016',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_b6a6ee6e046426d08ceea7a4506a1b5f44181543.1920x1080.jpg?t=1773079016',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_6b8faba0f6831a406ce015648958da9612d14dbb.1920x1080.jpg?t=1773079016',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/ss_8fc5eba770b4a1639b31666908bdd2bbc1aa2ae4.1920x1080.jpg?t=1773079016'
-    ]
-  },
-  '3': {
-    bannerImage:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_5710298af2318afd9aa72449ef29ac4a2ef64d8e.1920x1080.jpg?t=1768303991',
-    screenshots: [
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_5710298af2318afd9aa72449ef29ac4a2ef64d8e.1920x1080.jpg?t=1768303991',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_0901e64e9d4b8ebaea8348c194e7a3644d2d832d.1920x1080.jpg?t=1768303991',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_112b1e176c1bd271d8a565eacb6feaf90f240bb2.1920x1080.jpg?t=1768303991',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_d1b73b18cbcd5e9e412c7a1dead3c5cd7303d2ad.1920x1080.jpg?t=1768303991',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_107600c1337accc09104f7a8aa7f275f23cad096.1920x1080.jpg?t=1768303991',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ss_64eb760f9a2b67f6731a71cce3a8fb684b9af267.1920x1080.jpg?t=1768303991'
-    ]
-  },
-  '4': {
-    bannerImage:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_66b553f4c209476d3e4ce25fa4714002cc914c4f.1920x1080.jpg?t=1759502961',
-    screenshots: [
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_66b553f4c209476d3e4ce25fa4714002cc914c4f.1920x1080.jpg?t=1759502961',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_bac60bacbf5da8945103648c08d27d5e202444ca.1920x1080.jpg?t=1759502961',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_668dafe477743f8b50b818d5bbfcec669e9ba93e.1920x1080.jpg?t=1759502961',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_4ce07ae360b166f0f650e9a895a3b4b7bf15e34f.1920x1080.jpg?t=1759502961',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_d1a8f5a69155c3186c65d1da90491fcfd43663d9.1920x1080.jpg?t=1759502961'
-    ]
-  },
-  '5': {
-    bannerImage:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_2f649b68d579bf87011487d29bc4ccbfdd97d34f.1920x1080.jpg?t=1769690377',
-    screenshots: [
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_2f649b68d579bf87011487d29bc4ccbfdd97d34f.1920x1080.jpg?t=1769690377',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_0e64170751e1ae20ff8fdb7001a8892fd48260e7.1920x1080.jpg?t=1769690377',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_af2804aa4bf35d4251043744412ce3b359a125ef.1920x1080.jpg?t=1769690377',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_7924f64b6e5d586a80418c9896a1c92881a7905b.1920x1080.jpg?t=1769690377',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_4eb068b1cf52c91b57157b84bed18a186ed7714b.1920x1080.jpg?t=1769690377',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/ss_b529b0abc43f55fc23fe8058eddb6e37c9629a6a.1920x1080.jpg?t=1769690377'
-    ]
-  },
-  '6': {
-    bannerImage:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/ss_5384f9f8b96a0b9934b2bc35a4058376211636d2.1920x1080.jpg?t=1770338567',
-    screenshots: [
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/ss_5384f9f8b96a0b9934b2bc35a4058376211636d2.1920x1080.jpg?t=1770338567',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/ss_d5b6edd94e77ba6db31c44d8a3c09d807ab27751.1920x1080.jpg?t=1770338567',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/ss_a81e4231cc8d55f58b51a4a938898af46503cae5.1920x1080.jpg?t=1770338567',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/ss_62e10cf506d461e11e050457b08aa0e2a1c078d0.1920x1080.jpg?t=1770338567',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/ss_bd76bd88bc5334ee56ae3d5f0d8dec4455e8e3b8.1920x1080.jpg?t=1770338567',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/ss_33a645903d6dd9beec39f272a3daf57174a6cc26.1920x1080.jpg?t=1770338567'
-    ]
-  },
-  '7': {
-    bannerImage:
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/ss_c0fed447426b69981cf1721756acf75369801b31.1920x1080.jpg?t=1758127023',
-    screenshots: [
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/ss_c0fed447426b69981cf1721756acf75369801b31.1920x1080.jpg?t=1758127023',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/ss_8a9f0953e8a014bd3df2789c2835cb787cd3764d.1920x1080.jpg?t=1758127023',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/ss_68300459a8c3daacb2ec687adcdbf4442fcc4f47.1920x1080.jpg?t=1758127023',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/ss_bcb499a0dd001f4101823f99ec5094d2872ba6ee.1920x1080.jpg?t=1758127023',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/ss_8e07e477fa7ff2f88c8984bc89b9652a655da0e9.1920x1080.jpg?t=1758127023',
-      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/ss_34e6660705cfe47d2b2f95189c37f7cb77f75ca6.1920x1080.jpg?t=1758127023'
-    ]
-  },
-  '8': {
-    bannerImage: '/CrimsonDesert.png',
-    screenshots: ['/CrimsonDesert.png']
+export interface AdminUser {
+  id: string
+  username: string
+  mail: string
+  is_admin: boolean
+  is_curator: boolean
+  created_at: string
+}
+
+type ApiAuthUser = {
+  id: string
+  username: string
+  mail: string
+  is_admin: boolean
+  is_curator: boolean
+}
+
+type ApiAuthResponse = {
+  token: string
+  expires_at: string
+  user: ApiAuthUser
+}
+
+type ApiGame = {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  cover_image: string | null
+  banner_image: string | null
+  screenshots: string[] | null
+  platforms: string[] | null
+  developer: string | null
+  released_at: string | null
+  categories: string[] | null
+  reviews?: ApiReview[] | null
+}
+
+type ApiLike = {
+  review_id: string
+  user_id: string
+}
+
+type ApiReviewTag = {
+  tag?: { name: string } | null
+}
+
+type ApiReview = {
+  id: string
+  title: string
+  content: string | null
+  rating: number | null
+  user_id: string
+  game_id: string
+  created_at: string
+  likes?: number | ApiLike[] | null
+  reviews_to_tags?: ApiReviewTag[] | null
+}
+
+type Catalog = {
+  games: ApiGame[]
+  reviews: ApiReview[]
+}
+
+type GameStats = {
+  rating: number
+  reviewCount: number
+  likeCount: number
+}
+
+let catalogPromise: Promise<Catalog> | null = null
+let gameSnapshotById = new Map<string, Game>()
+let gameSnapshotBySlug = new Map<string, Game>()
+
+const safeParseJson = <T>(value: string | null): T | null => {
+  if (!value) return null
+  try {
+    return JSON.parse(value) as T
+  } catch {
+    return null
   }
 }
 
-// Mock Data - Real Games
-const mockGames: Game[] = [
-  {
-    id: '1',
-    slug: 'elden-ring',
-    title: 'Elden Ring',
-    description:
-      'Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between. A vast world where open fields with a variety of situations and huge dungeons with complex and three-dimensional designs are seamlessly connected.',
-    genre: 'Action-RPG',
-    platform: ['PC', 'PlayStation 5', 'Xbox Series X'],
-    rating: 9.4,
-    image: '/EldenRing.png',
-    ...mediaByGameId['1'],
-    releaseDate: '2022-02-25',
-    developer: 'FromSoftware'
-  },
-  {
-    id: '2',
-    slug: 'baldurs-gate-3',
-    title: "Baldur's Gate 3",
-    description:
-      'Gather your party and return to the Forgotten Realms in a tale of fellowship and betrayal, sacrifice and survival, and the lure of absolute power. Mysterious abilities are awakening inside you, drawn from a mind flayer parasite planted in your brain.',
-    genre: 'RPG',
-    platform: ['PC', 'PlayStation 5', 'Xbox Series X'],
-    rating: 9.6,
-    image: '/BaldursGate.png',
-    ...mediaByGameId['2'],
-    releaseDate: '2023-08-03',
-    developer: 'Larian Studios'
-  },
-  {
-    id: '3',
-    slug: 'the-witcher-3-wild-hunt',
-    title: 'The Witcher 3: Wild Hunt',
-    description:
-      'You are Geralt of Rivia, mercenary monster slayer. Before you stands a war-torn, monster-infested continent you can explore at will. Your current contract? Tracking down Ciri — the Child of Prophecy, a living weapon that can alter the shape of the world.',
-    genre: 'Action-RPG',
-    platform: ['PC', 'PlayStation 5', 'Xbox Series X', 'Nintendo Switch'],
-    rating: 9.5,
-    image: '/TheWitcher.png',
-    ...mediaByGameId['3'],
-    releaseDate: '2015-05-18',
-    developer: 'CD PROJEKT RED'
-  },
-  {
-    id: '4',
-    slug: 'red-dead-redemption-2',
-    title: 'Red Dead Redemption 2',
-    description:
-      'Winner of over 175 Game of the Year Awards and recipient of over 250 perfect scores, RDR2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.',
-    genre: 'Action-Aventure',
-    platform: ['PC', 'PlayStation 4', 'Xbox One'],
-    rating: 9.3,
-    image: '/RedDead.png',
-    ...mediaByGameId['4'],
-    releaseDate: '2018-10-26',
-    developer: 'Rockstar Games'
-  },
-  {
-    id: '5',
-    slug: 'cyberpunk-2077',
-    title: 'Cyberpunk 2077',
-    description:
-      'Cyberpunk 2077 is an open-world, action-adventure RPG set in the dark future of Night City — a dangerous megalopolis obsessed with power, glamor, and ceaseless body modification.',
-    genre: 'Action-RPG',
-    platform: ['PC', 'PlayStation 5', 'Xbox Series X'],
-    rating: 8.2,
-    image: '/CyberPunk.png',
-    ...mediaByGameId['5'],
-    releaseDate: '2020-12-10',
-    developer: 'CD PROJEKT RED'
-  },
-  {
-    id: '6',
-    slug: 'hollow-knight',
-    title: 'Hollow Knight',
-    description:
-      'Forge your own path in Hollow Knight! An epic action adventure through a vast ruined kingdom of insects and heroes. Explore twisting caverns, battle tainted creatures and befriend bizarre bugs, all in a classic, hand-drawn 2D style.',
-    genre: 'Metroidvania',
-    platform: ['PC', 'PlayStation 4', 'Xbox One', 'Nintendo Switch'],
-    rating: 9.0,
-    image: '/HollowKnight.png',
-    ...mediaByGameId['6'],
-    releaseDate: '2017-02-24',
-    developer: 'Team Cherry'
-  },
-  {
-    id: '7',
-    slug: 'hades',
-    title: 'Hades',
-    description:
-      'Defy the god of the dead as you hack and slash out of the Underworld in this rogue-like dungeon crawler from the creators of Bastion, Transistor, and Pyre.',
-    genre: 'Rogue-lite',
-    platform: ['PC', 'PlayStation 5', 'Xbox Series X', 'Nintendo Switch'],
-    rating: 9.1,
-    image: '/Hades.png',
-    ...mediaByGameId['7'],
-    releaseDate: '2020-09-17',
-    developer: 'Supergiant Games'
-  },
-  {
-    id: '8',
-    slug: 'crimson-desert',
-    title: 'Crimson Desert',
-    description:
-      "Une saga écrite dans le sang. Faites l'expérience de l'incroyable histoire de mercenaires luttant pour leur survie dans l'immense continent de Pywel. Un âge où les légendes disparaissent. Que vous le vouliez ou non, vous serez profondément impliqué dans l'histoire et le destin de ce monde.",
-    genre: 'Action-Aventure',
-    platform: ['PC', 'PlayStation 5', 'Xbox Series X'],
-    rating: 6.7,
-    image: '/CrimsonDesert.png',
-    ...mediaByGameId['8'],
-    releaseDate: '2026-03-19',
-    developer: 'Pearl Abyss'
+const getStoredUser = () =>
+  safeParseJson<AuthUser>(localStorage.getItem(AUTH_USER_KEY))
+
+const getStoredToken = () => localStorage.getItem(AUTH_TOKEN_KEY)
+
+const setAuthToken = (token: string | null) => {
+  if (token) {
+    localStorage.setItem(AUTH_TOKEN_KEY, token)
+  } else {
+    localStorage.removeItem(AUTH_TOKEN_KEY)
   }
-]
+}
 
-let mockReviews: Review[] = [
-  {
-    id: '101',
-    gameId: '1',
-    gameTitle: 'Elden Ring',
-    gameImage: '/EldenRing.png',
-    userId: '2',
-    username: 'Kelemvor',
-    userReviewCount: 738,
-    rating: 10,
-    title: "Le chef-d'œuvre absolu de FromSoftware",
-    content:
-      "Elden Ring est l'aboutissement de la formule Soulsborne. Le monde ouvert est gigantesque, rempli de secrets et la direction artistique est à couper le souffle. Chaque zone offre son lot de défis et de découvertes. Une expérience inoubliable qui redéfinit le genre.",
-    likes: 1245,
-    createdAt: '2022-03-15T10:30:00Z',
-    liked: false,
-    isPositive: true
-  },
-  {
-    id: '102',
-    gameId: '8',
-    gameTitle: 'Crimson Desert',
-    gameImage: '/CrimsonDesert.png',
+const normalizeSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 
-    userId: '3',
-    username: 'Fred Mngz',
-    userReviewCount: 173,
-    rating: 6,
-    title: 'Du potentiel partout... mais rien qui accroche vraiment',
-    content:
-      "(Avis sujet à MaJ) Je vais être honnête : Crimson Desert, j'avais envie de l'aimer. Les trailers m'avaient vendu un truc un peu fou, un monde vivant, des combats bordéliques mais stylés... le genre de jeu où tu te perds pendant des heures sans voir le temps passer. Au début tu y crois vraiment! Les...",
-    likes: 657,
-    createdAt: '2026-03-20T14:15:00Z',
-    liked: true,
-    isPositive: true
-  },
-  {
-    id: '103',
-    gameId: '2',
-    gameTitle: "Baldur's Gate 3",
-    gameImage: '/BaldursGate.png',
-    userId: '4',
-    username: 'Moizi',
-    userReviewCount: 2561,
-    rating: 9,
-    title: 'Le nouveau standard du RPG',
-    content:
-      "Larian Studios a réussi l'impossible : retranscrire la liberté du jeu de rôle papier dans un jeu vidéo. Les choix ont de vraies conséquences, l'écriture est brillante et les combats tactiques sont profonds. Un monument.",
-    likes: 892,
-    createdAt: '2023-08-18T09:45:00Z',
-    liked: false,
-    isPositive: true
-  },
-  {
-    id: '104',
-    gameId: '8',
-    gameTitle: 'Crimson Desert',
-    gameImage: '/CrimsonDesert.png',
+const createPlaceholderImage = (title: string, width: number, height: number) =>
+  `https://placehold.co/${width}x${height}/111827/e5e7eb?text=${encodeURIComponent(title)}`
 
-    userId: '5',
-    username: 'u_bc0f5f8571aad470c4',
-    userReviewCount: 1,
-    rating: 5,
-    title:
-      'Le ragoût de caviar, macaron, homard, chocolat grand cru et foie gras',
-    content:
-      "Crimson Desert est un ovni vidéoludique, inspiré des plus grands noms du jeu vidéo de ces dernières années, il n'a malheureusement ni leur génie, ni leur science du game design pour leur arriver à la cheville. Je vais souvent...",
-    likes: 12,
-    createdAt: '2026-03-22T16:20:00Z',
-    liked: false,
-    isPositive: false
-  },
-  {
-    id: '105',
-    gameId: '3',
-    gameTitle: 'The Witcher 3: Wild Hunt',
-    gameImage: '/TheWitcher.png',
-    userId: '6',
-    username: 'damon8671',
-    userReviewCount: 545,
-    rating: 9,
-    title: 'Le sens de la vie, vous avez 80 heures',
-    content:
-      "L'écriture des quêtes, même secondaires, est d'un niveau rarement atteint. Le monde est crédible, mature et sombre. Geralt est un protagoniste fascinant. Seul le système de combat manque un peu de profondeur.",
-    likes: 2105,
-    createdAt: '2015-06-05T11:10:00Z',
-    liked: false,
-    isPositive: true
+const invalidateCatalog = () => {
+  catalogPromise = null
+}
+
+const getAuthHeaders = () => {
+  const token = getStoredToken()
+  if (!token) {
+    throw new Error('Authentication required')
   }
-]
+  return {
+    Authorization: `Bearer ${token}`
+  }
+}
 
-// Helper to simulate network delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+const normalizeAuthUser = (user: ApiAuthUser): AuthUser => ({
+  id: user.id,
+  username: user.username,
+  email: user.mail,
+  role: user.is_admin ? 'admin' : user.is_curator ? 'curator' : 'user',
+  isCurator: user.is_curator,
+  isAdmin: user.is_admin
+})
+
+const normalizeAuthResponse = (payload: ApiAuthResponse): AuthSession => ({
+  token: payload.token,
+  expiresAt: payload.expires_at,
+  user: normalizeAuthUser(payload.user)
+})
+
+const fetchGamesRaw = async (): Promise<ApiGame[]> => {
+  try {
+    const response = await api.get<ApiGame[]>('/v1/games')
+    return response.data
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return []
+    }
+    throw error
+  }
+}
+
+const fetchReviewsRaw = async (): Promise<ApiReview[]> => {
+  try {
+    const response = await api.get<ApiReview[]>('/v1/reviews')
+    return response.data
+  } catch {
+    // Reviews should never block games rendering in the UI.
+    return []
+  }
+}
+
+const loadCatalog = async (): Promise<Catalog> => {
+  if (!catalogPromise) {
+    catalogPromise = Promise.all([fetchGamesRaw(), fetchReviewsRaw()]).then(
+      ([games, reviews]) => ({
+        games,
+        reviews
+      })
+    )
+  }
+
+  try {
+    return await catalogPromise
+  } catch (error) {
+    catalogPromise = null
+    throw error
+  }
+}
+
+const getReviewStatsByGame = (reviews: ApiReview[]) => {
+  const statsByGameId = new Map<string, GameStats>()
+
+  for (const review of reviews) {
+    const current = statsByGameId.get(review.game_id) ?? {
+      rating: 0,
+      reviewCount: 0,
+      likeCount: 0
+    }
+
+    const nextReviewCount = current.reviewCount + 1
+    const reviewRating = review.rating ?? 0
+    const nextRating =
+      (current.rating * current.reviewCount + reviewRating) / nextReviewCount
+
+    statsByGameId.set(review.game_id, {
+      rating: Number.isFinite(nextRating) ? nextRating : 0,
+      reviewCount: nextReviewCount,
+      likeCount: current.likeCount + getReviewLikesCount(review)
+    })
+  }
+
+  return statsByGameId
+}
+
+const mapGame = (game: ApiGame, stats?: GameStats): Game => ({
+  id: game.id,
+  slug: game.slug || normalizeSlug(game.name),
+  title: game.name,
+  description: game.description ?? '',
+  genre: game.categories?.[0] ?? 'Unknown',
+  platform: game.platforms ?? [],
+  rating: stats?.rating ?? 0,
+  image: game.cover_image ?? createPlaceholderImage(game.name, 600, 900),
+  bannerImage:
+    game.banner_image ??
+    createPlaceholderImage(`${game.name} banner`, 1600, 900),
+  screenshots: game.screenshots ?? undefined,
+  releaseDate: game.released_at ?? new Date(0).toISOString(),
+  developer: game.developer ?? 'Unknown',
+  reviewCount: stats?.reviewCount,
+  likeCount: stats?.likeCount
+})
+
+const updateGameSnapshots = (games: Game[]) => {
+  gameSnapshotById = new Map(games.map((game) => [game.id, game]))
+  gameSnapshotBySlug = new Map(games.map((game) => [game.slug, game]))
+}
+
+const buildGameCatalog = async (): Promise<Game[]> => {
+  const { games, reviews } = await loadCatalog()
+  const statsByGameId = getReviewStatsByGame(reviews)
+  const mappedGames = games.map((game) =>
+    mapGame(game, statsByGameId.get(game.id))
+  )
+
+  updateGameSnapshots(mappedGames)
+  return mappedGames
+}
+
+const loadGamesOnly = async (): Promise<Game[]> => {
+  const games = await fetchGamesRaw()
+  const mappedGames = games.map((game) => mapGame(game))
+  updateGameSnapshots(mappedGames)
+  return mappedGames
+}
+
+const getApiErrorMessage = (error: unknown, fallbackMessage: string) => {
+  if (axios.isAxiosError(error)) {
+    const responseError = error.response?.data as
+      | { error?: string; details?: string }
+      | undefined
+    return (
+      responseError?.error ||
+      responseError?.details ||
+      error.message ||
+      fallbackMessage
+    )
+  }
+
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return fallbackMessage
+}
+
+const getReviewLikesCount = (review: ApiReview) => {
+  if (Array.isArray(review.likes)) {
+    return review.likes.length
+  }
+
+  if (typeof review.likes === 'number') {
+    return review.likes
+  }
+
+  return 0
+}
+
+const getReviewLikedByUser = (review: ApiReview, userId?: string | null) => {
+  if (!userId || !Array.isArray(review.likes)) {
+    return false
+  }
+
+  return review.likes.some((like) => like.user_id === userId)
+}
+
+const mapReview = (
+  review: ApiReview,
+  catalog: Catalog,
+  currentUserId?: string | null,
+  reviewCountsByUserId?: Map<string, number>
+): Review => {
+  const game = catalog.games.find((entry) => entry.id === review.game_id)
+  const currentUser = currentUserId ? getStoredUser() : null
+  const likes = getReviewLikesCount(review)
+  const liked = getReviewLikedByUser(review, currentUserId)
+
+  return {
+    id: review.id,
+    gameId: review.game_id,
+    gameTitle: game?.name ?? game?.slug,
+    gameImage: game?.cover_image ?? game?.banner_image ?? undefined,
+    userId: review.user_id,
+    username:
+      currentUserId && currentUserId === review.user_id
+        ? (currentUser?.username ?? 'You')
+        : `Member ${review.user_id.slice(0, 6)}`,
+    userReviewCount: reviewCountsByUserId?.get(review.user_id),
+    rating: review.rating ?? 0,
+    title: review.title,
+    content: review.content ?? '',
+    likes,
+    createdAt: review.created_at,
+    liked,
+    isPositive: review.rating == null ? undefined : review.rating >= 6,
+    tags: review.reviews_to_tags
+      ?.map((entry) => entry.tag?.name)
+      .filter(Boolean) as string[] | undefined
+  }
+}
+
+const buildReviewCatalog = async (): Promise<Review[]> => {
+  const catalog = await loadCatalog()
+  const currentUser = getStoredUser()
+  const reviewCountsByUserId = new Map<string, number>()
+
+  for (const review of catalog.reviews) {
+    reviewCountsByUserId.set(
+      review.user_id,
+      (reviewCountsByUserId.get(review.user_id) ?? 0) + 1
+    )
+  }
+
+  return catalog.reviews
+    .slice()
+    .sort(
+      (left, right) =>
+        new Date(right.created_at).getTime() -
+        new Date(left.created_at).getTime()
+    )
+    .map((review) =>
+      mapReview(review, catalog, currentUser?.id, reviewCountsByUserId)
+    )
+}
+
+const refreshReviewById = async (reviewId: string): Promise<Review> => {
+  const catalog = await loadCatalog()
+  const currentUser = getStoredUser()
+  const reviewCountsByUserId = new Map<string, number>()
+
+  for (const review of catalog.reviews) {
+    reviewCountsByUserId.set(
+      review.user_id,
+      (reviewCountsByUserId.get(review.user_id) ?? 0) + 1
+    )
+  }
+
+  const review = catalog.reviews.find((entry) => entry.id === reviewId)
+  if (!review) {
+    throw new Error('Review not found')
+  }
+
+  return mapReview(review, catalog, currentUser?.id, reviewCountsByUserId)
+}
 
 export const getGameSlugById = (gameId: string): string | undefined =>
-  mockGames.find((game) => game.id === gameId)?.slug
+  gameSnapshotById.get(gameId)?.slug
 
-// Mock API Functions
+export const authService = {
+  login: async (payload: { mail: string; password: string }) => {
+    try {
+      const response = await api.post<ApiAuthResponse>(
+        '/v1/auth/login',
+        payload
+      )
+      return normalizeAuthResponse(response.data)
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Login failed'))
+    }
+  },
+
+  register: async (payload: {
+    username: string
+    mail: string
+    password: string
+    is_curator: boolean
+  }) => {
+    try {
+      const response = await api.post<ApiAuthResponse>(
+        '/v1/auth/register',
+        payload
+      )
+      return normalizeAuthResponse(response.data)
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Registration failed'))
+    }
+  },
+
+  saveSession: (session: AuthSession) => {
+    setAuthToken(session.token)
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(session.user))
+  },
+
+  clearSession: () => {
+    setAuthToken(null)
+    localStorage.removeItem(AUTH_USER_KEY)
+  },
+
+  getSession: () => ({
+    token: getStoredToken(),
+    user: getStoredUser()
+  })
+}
+
 export const gameService = {
   getGames: async (): Promise<Game[]> => {
-    await delay(600)
-    return [...mockGames]
+    try {
+      return await buildGameCatalog()
+    } catch {
+      return loadGamesOnly()
+    }
   },
 
   getGameById: async (id: string): Promise<Game | undefined> => {
-    await delay(400)
-    return mockGames.find((g) => g.id === id)
+    const cachedGame = gameSnapshotById.get(id)
+    if (cachedGame) {
+      return cachedGame
+    }
+
+    const response = await api.get<ApiGame>(`/v1/games/${id}`)
+    const rawGame = response.data
+    const statsByGameId = getReviewStatsByGame(rawGame.reviews ?? [])
+    const mappedGame = mapGame(rawGame, statsByGameId.get(rawGame.id))
+    gameSnapshotById.set(mappedGame.id, mappedGame)
+    gameSnapshotBySlug.set(mappedGame.slug, mappedGame)
+    return mappedGame
   },
 
   getGameBySlug: async (slug: string): Promise<Game | undefined> => {
-    await delay(400)
-    return mockGames.find((g) => g.slug === slug)
+    const decodedSlug = decodeURIComponent(slug)
+    const normalizedSlug = normalizeSlug(decodedSlug)
+    const cachedGame =
+      gameSnapshotBySlug.get(decodedSlug) ||
+      gameSnapshotBySlug.get(slug) ||
+      Array.from(gameSnapshotBySlug.values()).find(
+        (game) =>
+          game.slug === decodedSlug ||
+          game.id === decodedSlug ||
+          normalizeSlug(game.slug) === normalizedSlug ||
+          normalizeSlug(game.title) === normalizedSlug
+      )
+    if (cachedGame) {
+      return cachedGame
+    }
+
+    const games = await gameService.getGames()
+    return games.find(
+      (game) =>
+        game.slug === decodedSlug ||
+        game.slug === slug ||
+        game.id === decodedSlug ||
+        normalizeSlug(game.slug) === normalizedSlug ||
+        normalizeSlug(game.title) === normalizedSlug
+    )
   },
 
   getTrendingGames: async (): Promise<Game[]> => {
-    await delay(500)
-    return [...mockGames].sort((a, b) => b.rating - a.rating).slice(0, 5)
+    const games = await gameService.getGames()
+    return games
+      .slice()
+      .sort((left, right) => right.rating - left.rating)
+      .slice(0, 5)
   },
 
   getLatestReleases: async (): Promise<Game[]> => {
-    await delay(500)
-    return [...mockGames]
+    const games = await gameService.getGames()
+    return games
+      .slice()
       .sort(
-        (a, b) =>
-          new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
+        (left, right) =>
+          new Date(right.releaseDate).getTime() -
+          new Date(left.releaseDate).getTime()
       )
       .slice(0, 5)
   }
 }
 
 export const reviewService = {
+  getAll: async (): Promise<Review[]> => buildReviewCatalog(),
+
   getReviewsByGame: async (gameId: string): Promise<Review[]> => {
-    await delay(500)
-    return mockReviews
-      .filter((r) => r.gameId === gameId)
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
+    const reviews = await buildReviewCatalog()
+    return reviews.filter((review) => review.gameId === gameId)
   },
 
   getLatestReviews: async (): Promise<Review[]> => {
-    await delay(400)
-    return [...mockReviews]
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      .slice(0, 3)
+    const reviews = await buildReviewCatalog()
+    return reviews.slice(0, 3)
   },
 
   getUserReviews: async (userId: string): Promise<Review[]> => {
-    await delay(500)
-    return mockReviews.filter((r) => r.userId === userId)
+    const reviews = await buildReviewCatalog()
+    return reviews.filter((review) => review.userId === userId)
   },
 
-  addReview: async (
-    review: Omit<Review, 'id' | 'createdAt' | 'likes' | 'liked'>
+  addReview: async (review: {
+    title: string
+    content?: string | null
+    rating?: number | null
+    gameId: string
+    tags?: string[] | null
+  }): Promise<Review> => {
+    try {
+      const response = await api.post<ApiReview>(
+        '/v1/reviews',
+        {
+          title: review.title,
+          content: review.content ?? null,
+          rating: review.rating ?? null,
+          game_id: review.gameId,
+          tags: review.tags ?? null
+        },
+        {
+          headers: getAuthHeaders()
+        }
+      )
+      invalidateCatalog()
+      const nextCatalog = await loadCatalog()
+      const reviewCountsByUserId = new Map<string, number>()
+
+      for (const entry of nextCatalog.reviews) {
+        reviewCountsByUserId.set(
+          entry.user_id,
+          (reviewCountsByUserId.get(entry.user_id) ?? 0) + 1
+        )
+      }
+
+      return mapReview(
+        response.data,
+        nextCatalog,
+        getStoredUser()?.id,
+        reviewCountsByUserId
+      )
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Unable to publish review'))
+    }
+  },
+
+  updateReview: async (
+    reviewId: string,
+    review: {
+      title?: string
+      content?: string | null
+      rating?: number | null
+      gameId?: string
+      tags?: string[] | null
+    }
   ): Promise<Review> => {
-    await delay(800)
-    const newReview: Review = {
-      ...review,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString(),
-      likes: 0,
-      liked: false,
-      isPositive: review.rating >= 6
+    const response = await api.put<ApiReview>(
+      `/v1/reviews/${reviewId}`,
+      {
+        title: review.title,
+        content: review.content,
+        rating: review.rating,
+        game_id: review.gameId,
+        tags: review.tags
+      },
+      {
+        headers: getAuthHeaders()
+      }
+    )
+    invalidateCatalog()
+    const nextCatalog = await loadCatalog()
+    const reviewCountsByUserId = new Map<string, number>()
+
+    for (const entry of nextCatalog.reviews) {
+      reviewCountsByUserId.set(
+        entry.user_id,
+        (reviewCountsByUserId.get(entry.user_id) ?? 0) + 1
+      )
     }
-    mockReviews = [newReview, ...mockReviews]
-    return newReview
+
+    return mapReview(
+      response.data,
+      nextCatalog,
+      getStoredUser()?.id,
+      reviewCountsByUserId
+    )
   },
 
-  toggleLike: async (reviewId: string): Promise<Review> => {
-    await delay(300)
-    const reviewIndex = mockReviews.findIndex((r) => r.id === reviewId)
-    if (reviewIndex === -1) throw new Error('Review not found')
+  deleteReview: async (reviewId: string): Promise<void> => {
+    await api.delete(`/v1/reviews/${reviewId}`, {
+      headers: getAuthHeaders()
+    })
+    invalidateCatalog()
+  },
 
-    const review = mockReviews[reviewIndex]
-    const updatedReview = {
-      ...review,
-      liked: !review.liked,
-      likes: review.liked ? review.likes - 1 : review.likes + 1
+  toggleLike: async (reviewId: string, liked = false): Promise<Review> => {
+    const currentUser = getStoredUser()
+    if (!currentUser) {
+      throw new Error('Authentication required')
     }
 
-    mockReviews[reviewIndex] = updatedReview
-    return updatedReview
+    if (liked) {
+      await api.delete(`/v1/reviews/${reviewId}/like`, {
+        headers: getAuthHeaders()
+      })
+    } else {
+      await api.post(`/v1/reviews/${reviewId}/like`, undefined, {
+        headers: getAuthHeaders()
+      })
+    }
+
+    invalidateCatalog()
+    const refreshed = await refreshReviewById(reviewId)
+    return {
+      ...refreshed,
+      liked: !liked
+    }
   }
 }
 
 export const adminService = {
+  getUsers: async (): Promise<AdminUser[]> => {
+    const response = await api.get<AdminUser[]>('/v1/users', {
+      headers: getAuthHeaders()
+    })
+    return response.data
+  },
   getStats: async () => {
-    await delay(600)
+    const [catalog, users] = await Promise.all([
+      loadCatalog(),
+      adminService.getUsers().catch(() => [])
+    ])
+
     return {
-      totalUsers: 1245,
-      totalGames: mockGames.length,
-      totalReviews: mockReviews.length,
-      reportedReviews: 3
+      totalUsers: users.length,
+      totalGames: catalog.games.length,
+      totalReviews: catalog.reviews.length,
+      reportedReviews: null
     }
   }
 }

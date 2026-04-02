@@ -12,6 +12,7 @@ export const getRatingColor = (rating: number) => {
   return 'text-ratingBad'
 }
 export const GameCard: React.FC<GameCardProps> = ({ game }) => {
+  const hasImage = Boolean(game.image)
   return (
     <motion.div
       whileHover={{
@@ -22,14 +23,25 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       }}
       className="group relative flex flex-col h-full w-full max-w-[200px] shrink-0"
     >
-      <Link to={`/games/${game.slug}`} className="flex-grow flex flex-col">
+      <Link
+        to={`/games/${encodeURIComponent(game.slug)}`}
+        className="flex-grow flex flex-col"
+      >
         {/* Image Section - Portrait */}
-        <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-gray-900 border border-gray-800 mb-3 shadow-lg group-hover:border-gray-600 transition-colors">
-          <img
-            src={game.image}
-            alt={game.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+        <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-800 mb-3 shadow-lg group-hover:border-gray-600 transition-colors">
+          {hasImage ? (
+            <img
+              src={game.image}
+              alt={game.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full w-full items-end p-4">
+              <span className="text-xs uppercase tracking-[0.2em] text-gray-500">
+                {game.title}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Content Section */}

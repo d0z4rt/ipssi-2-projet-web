@@ -1,13 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Gamepad2,
-  Menu,
-  X,
-  User as UserIcon,
-  LogOut,
-  LayoutDashboard,
-  ShieldAlert
-} from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Gamepad2, LogOut, Menu, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
@@ -42,6 +34,11 @@ export const Navbar: React.FC = () => {
       navLinks.push({
         name: 'Admin',
         path: '/admin'
+      })
+    } else if (user?.role === 'curator') {
+      navLinks.push({
+        name: 'Curator',
+        path: '/dashboard'
       })
     }
   }
@@ -85,6 +82,9 @@ export const Navbar: React.FC = () => {
                     </div>
                     <span className="text-sm font-medium text-gray-200">
                       {user?.username}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-gray-800 text-gray-400">
+                      {user?.role}
                     </span>
                   </div>
                   <button
@@ -175,6 +175,9 @@ export const Navbar: React.FC = () => {
                         </div>
                         <div className="text-sm font-medium text-gray-400">
                           {user?.email}
+                        </div>
+                        <div className="mt-1 inline-flex rounded bg-gray-800 px-2 py-0.5 text-[10px] uppercase tracking-wider text-gray-400">
+                          {user?.role}
                         </div>
                       </div>
                     </div>

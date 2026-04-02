@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Gamepad2, Mail, Lock, User, AlertCircle } from 'lucide-react'
+import { AlertCircle, Gamepad2, Lock, Mail, User } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -9,6 +9,7 @@ export const Register: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isCurator, setIsCurator] = useState(false)
   const [error, setError] = useState('')
   const { register, loading } = useAuth()
   const navigate = useNavigate()
@@ -23,15 +24,19 @@ export const Register: React.FC = () => {
       setError('Passwords do not match')
       return
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
       return
     }
     try {
-      await register(username, email, password)
+      await register(username, email, password, isCurator)
       navigate('/dashboard')
     } catch (err) {
-      setError('Registration failed. Please try again.')
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Registration failed. Please try again.'
+      )
     }
   }
   return (
@@ -143,6 +148,21 @@ export const Register: React.FC = () => {
                 />
               </div>
             </div>
+
+            <label className="flex items-start gap-3 rounded-lg border border-gray-700 bg-darkBg/60 px-4 py-3 text-sm text-gray-300">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4 rounded border-gray-600 bg-darkBg text-accent focus:ring-accent"
+                checked={isCurator}
+                onChange={(e) => setIsCurator(e.target.checked)}
+              />
+              <span>
+                Register as a curator
+                <span className="block text-xs text-gray-500">
+                  Curators can create and manage reviews.
+                </span>
+              </span>
+            </label>
 
             <button
               type="submit"
