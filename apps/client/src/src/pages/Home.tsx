@@ -65,7 +65,7 @@ export const Home: React.FC = () => {
       try {
         const [allGames, reviews] = await Promise.all([
           gameService.getGames(),
-          reviewService.getLatestReviews()
+          reviewService.getLatestReviews(HOME_GAMES_SECTION_LIMIT)
         ])
 
         const trending = allGames

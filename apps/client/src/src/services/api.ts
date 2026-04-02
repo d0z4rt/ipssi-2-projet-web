@@ -678,9 +678,17 @@ export const reviewService = {
     return reviews.filter((review) => review.gameId === gameId)
   },
 
-  getLatestReviews: async (): Promise<Review[]> => {
+  getLatestReviews: async (limit = 3): Promise<Review[]> => {
     const reviews = await buildReviewCatalog()
-    return reviews.slice(0, 3)
+    return reviews
+      .slice()
+      .sort(
+        (left, right) =>
+          right.likes - left.likes ||
+          new Date(right.createdAt).getTime() -
+            new Date(left.createdAt).getTime()
+      )
+      .slice(0, limit)
   },
 
   getUserReviews: async (userId: string): Promise<Review[]> => {
