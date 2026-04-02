@@ -1,6 +1,7 @@
 import authRoutes from '#auth/auth.routes.js'
 import gameRoutes from '#games/game.routes.js'
 import reviewRoutes from '#reviews/review.routes.js'
+import usersRoutes from '#users/user.routes.js'
 import { type Handler, Router } from 'express'
 
 import { logger } from './utils/logger.js'
@@ -28,6 +29,10 @@ const defaultRoutes: { path: string; route: Handler }[] = [
   {
     path: '/v1/reviews',
     route: reviewRoutes
+  },
+  {
+    path: '/v1/users',
+    route: usersRoutes
   },
   {
     path: '/',

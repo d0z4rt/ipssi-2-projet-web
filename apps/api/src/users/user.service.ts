@@ -29,6 +29,13 @@ const userService = {
 
     return saved_user
   },
+  getAll: async () => {
+    return userRepository.find({
+      order: {
+        created_at: 'DESC'
+      }
+    })
+  },
   getOneByMail: async (mail: string) => {
     return userRepository.findOne({ where: { mail } })
   }
