@@ -5,7 +5,13 @@ import { Link } from 'react-router-dom'
 
 import { GameCard } from '../components/GameCard'
 import { ReviewCard } from '../components/ReviewCard'
-import { Game, Review, gameService, reviewService } from '../services/api'
+import {
+  API_BASE_URL,
+  Game,
+  Review,
+  gameService,
+  reviewService
+} from '../services/api'
 
 const steamHeaderByGameId: Record<string, string> = {
   '1': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg?t=1767883716',
@@ -130,7 +136,7 @@ export const Home: React.FC = () => {
       <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden mb-12">
         <div className="absolute inset-0 z-0">
           <img
-            src={featuredBanner}
+            src={`${API_BASE_URL}/v1/${featuredBanner}`}
             alt={
               featuredGame
                 ? `${featuredGame.title} Steam banner`

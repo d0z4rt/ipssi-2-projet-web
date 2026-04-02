@@ -1,50 +1,8 @@
 // oxlint-disable no-console
 import { categoriesSeed, gamesSeed } from '#MOCK/gamesSeed.js'
 import { reviewsSeed } from '#MOCK/reviewsSeed.js'
+import { usersSeed } from '#MOCK/usersSeed.js'
 import { MigrationInterface, QueryRunner } from 'typeorm'
-
-const usersSeed = [
-  {
-    username: 'john_doe',
-    mail: 'john@example.com',
-    password:
-      '$argon2id$v=19$m=65536,t=3,p=4$mOWjwmOc9Uzxx13HmKMrBw$JxaZSk5rVn/qlVzEFsvbNUxN6h3L+XL6dTwux1dIRwk', // Strongpass1
-    is_admin: false,
-    is_curator: false
-  },
-  {
-    username: 'jane_smith',
-    mail: 'jane@example.com',
-    password:
-      '$argon2id$v=19$m=65536,t=3,p=4$mOWjwmOc9Uzxx13HmKMrBw$JxaZSk5rVn/qlVzEFsvbNUxN6h3L+XL6dTwux1dIRwk',
-    is_admin: true,
-    is_curator: true
-  },
-  {
-    username: 'game_master',
-    mail: 'master@example.com',
-    password:
-      '$argon2id$v=19$m=65536,t=3,p=4$mOWjwmOc9Uzxx13HmKMrBw$JxaZSk5rVn/qlVzEFsvbNUxN6h3L+XL6dTwux1dIRwk',
-    is_admin: false,
-    is_curator: true
-  },
-  {
-    username: 'admin',
-    mail: 'admin@admin.com',
-    password:
-      '$argon2id$v=19$m=65536,t=3,p=4$mOWjwmOc9Uzxx13HmKMrBw$JxaZSk5rVn/qlVzEFsvbNUxN6h3L+XL6dTwux1dIRwk',
-    is_admin: true,
-    is_curator: false
-  },
-  {
-    username: 'casual_gamer',
-    mail: 'casual@example.com',
-    password:
-      '$argon2id$v=19$m=65536,t=3,p=4$mOWjwmOc9Uzxx13HmKMrBw$JxaZSk5rVn/qlVzEFsvbNUxN6h3L+XL6dTwux1dIRwk',
-    is_admin: false,
-    is_curator: false
-  }
-]
 
 const tagsSeed = [
   { name: 'Masterpiece' },
@@ -100,6 +58,34 @@ const generateRandomReviews = () => {
   return generatedReviews
 }
 
+const generateRandomLikes = (
+  reviewIds: number[],
+  userIds: number[]
+): Array<{ review_id: number; user_id: number }> => {
+  const likes = []
+  const likeSet = new Set<string>() // Track unique combinations
+
+  for (const reviewId of reviewIds) {
+    // Each review gets between 0 and (number of users - 1) likes
+    const maxLikes = Math.floor(Math.random() * userIds.length)
+    const numLikes = Math.floor(Math.random() * (maxLikes + 1))
+
+    // Get random unique users for this review
+    const shuffledUsers = [...userIds].sort(() => Math.random() - 0.5)
+    const selectedUsers = shuffledUsers.slice(0, numLikes)
+
+    for (const userId of selectedUsers) {
+      const key = `${reviewId}-${userId}`
+      if (!likeSet.has(key)) {
+        likeSet.add(key)
+        likes.push({ review_id: reviewId, user_id: userId })
+      }
+    }
+  }
+
+  return likes
+}
+
 export class Seed1774979328093 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`TRUNCATE TABLE reviews_tags CASCADE`)
@@ -107,6 +93,7 @@ export class Seed1774979328093 implements MigrationInterface {
     await queryRunner.query(`TRUNCATE TABLE games_categories CASCADE`)
     await queryRunner.query(`TRUNCATE TABLE games CASCADE`)
     await queryRunner.query(`TRUNCATE TABLE users CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE likes CASCADE`)
     await queryRunner.query(`TRUNCATE TABLE tags CASCADE`)
     await queryRunner.query(`TRUNCATE TABLE categories CASCADE`)
 
@@ -219,6 +206,25 @@ export class Seed1774979328093 implements MigrationInterface {
       }
     }
 
+    // After inserting all reviews, collect review IDs and user IDs
+    const allReviews = await queryRunner.query(`SELECT id FROM reviews`)
+    const allUsers = await queryRunner.query(`SELECT id FROM users`)
+
+    const reviewIds = allReviews.map((r: any) => r.id)
+    const userIds = allUsers.map((u: any) => u.id)
+
+    // Generate random likes
+    const randomLikes = generateRandomLikes(reviewIds, userIds)
+
+    // Insert likes
+    for (const like of randomLikes) {
+      await queryRunner.query(
+        `INSERT INTO likes (review_id, user_id, created_at)
+     VALUES ($1, $2, NOW()) ON CONFLICT DO NOTHING`,
+        [like.review_id, like.user_id]
+      )
+    }
+
     console.log(
       `Seeded ${gamesSeed.length} games with ${finalReviewsSeed.length} total reviews`
     )
@@ -231,6 +237,7 @@ export class Seed1774979328093 implements MigrationInterface {
     await queryRunner.query(`TRUNCATE TABLE games_categories CASCADE`)
     await queryRunner.query(`TRUNCATE TABLE games CASCADE`)
     await queryRunner.query(`TRUNCATE TABLE users CASCADE`)
+    await queryRunner.query(`TRUNCATE TABLE likes CASCADE`)
     await queryRunner.query(`TRUNCATE TABLE tags CASCADE`)
     await queryRunner.query(`TRUNCATE TABLE categories CASCADE`)
   }

@@ -3,7 +3,12 @@ import { Heart } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Review, getGameSlugById, reviewService } from '../services/api'
+import {
+  API_BASE_URL,
+  Review,
+  getGameSlugById,
+  reviewService
+} from '../services/api'
 interface ReviewCardProps {
   review: Review
   onLikeUpdate?: (updatedReview: Review) => void
@@ -71,7 +76,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
         <div className="flex items-center gap-3 p-5 pb-4 border-b border-gray-800/50 bg-cardBg">
           {localReview.gameImage ? (
             <img
-              src={localReview.gameImage}
+              src={`${API_BASE_URL}/v1/${localReview.gameImage}`}
               alt={localReview.gameTitle}
               className="w-10 h-14 object-cover rounded"
             />
