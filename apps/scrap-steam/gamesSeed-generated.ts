@@ -3,6 +3,7 @@ export const gamesSeed = [
   {
     name: 'The Witcher 3: Wild Hunt',
     slug: 'the-witcher-3-wild-hunt',
+    steam_app_id: 292030,
     description:
       'You are Geralt of Rivia, mercenary monster slayer. Before you stands a war-torn, monster-infested continent you can explore at will. Your current contract? Tracking down Ciri — the Child of Prophecy, a living weapon that can alter the shape of the world.',
     developer: 'CD PROJEKT RED',
@@ -39,6 +40,7 @@ export const gamesSeed = [
   {
     name: 'Cyberpunk 2077',
     slug: 'cyberpunk-2077',
+    steam_app_id: 1091500,
     description:
       'Cyberpunk 2077 is an open-world, action-adventure RPG set in the dark future of Night City — a dangerous megalopolis obsessed with power, glamor, and ceaseless body modification.',
     developer: 'CD PROJEKT RED',
@@ -79,6 +81,7 @@ export const gamesSeed = [
   {
     name: "Baldur's Gate 3",
     slug: 'baldurs-gate-3',
+    steam_app_id: 1086940,
     description:
       'Baldur’s Gate 3 is a story-rich, party-based RPG set in the universe of Dungeons &amp; Dragons, where your choices shape a tale of fellowship and betrayal, survival and sacrifice, and the lure of absolute power.',
     developer: 'Larian Studios',
@@ -116,6 +119,7 @@ export const gamesSeed = [
   {
     name: 'ELDEN RING',
     slug: 'elden-ring',
+    steam_app_id: 1245620,
     description:
       'THE CRITICALLY ACCLAIMED FANTASY ACTION RPG. Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between.',
     developer: 'FromSoftware, Inc.',
@@ -144,6 +148,7 @@ export const gamesSeed = [
   {
     name: 'God of War',
     slug: 'god-of-war',
+    steam_app_id: 1593500,
     description:
       'His vengeance against the Gods of Olympus years behind him, Kratos now lives as a man in the realm of Norse Gods and monsters. It is in this harsh, unforgiving world that he must fight to survive… and teach his son to do the same.',
     developer: 'Santa Monica Studio',
@@ -172,6 +177,7 @@ export const gamesSeed = [
   {
     name: 'Red Dead Redemption 2',
     slug: 'red-dead-redemption-2',
+    steam_app_id: 1174180,
     description:
       'Arthur Morgan and the Van der Linde Gang are outlaws on the run. With federal agents and bounty hunters massing on their heels, the gang must rob, steal, and fight their way across the rugged heartland in order to survive.',
     developer: 'Rockstar Games',
@@ -195,6 +201,7 @@ export const gamesSeed = [
   {
     name: 'Starfield',
     slug: 'starfield',
+    steam_app_id: 1716740,
     description:
       'Starfield is the first new universe in 25 years from Bethesda Game Studios, the award-winning creators of The Elder Scrolls V: Skyrim and Fallout 4.',
     developer: 'Bethesda Game Studios',
@@ -222,6 +229,7 @@ export const gamesSeed = [
   {
     name: 'Hogwarts Legacy',
     slug: 'hogwarts-legacy',
+    steam_app_id: 990080,
     description:
       'Hogwarts Legacy is an immersive, open-world action RPG. Now you can take control of the action and be at the center of your own adventure in the wizarding world.',
     developer: 'Avalanche Software',
@@ -245,6 +253,7 @@ export const gamesSeed = [
   {
     name: 'Counter-Strike 2',
     slug: 'counter-strike-2',
+    steam_app_id: 730,
     description:
       'For over two decades, Counter-Strike has offered an elite competitive experience, one shaped by millions of players from across the globe. And now the next chapter in the CS story is about to begin. This is Counter-Strike 2.',
     developer: 'Valve',
@@ -282,6 +291,7 @@ export const gamesSeed = [
   {
     name: 'Dota 2',
     slug: 'dota-2',
+    steam_app_id: 570,
     description:
       "Every day, millions of players worldwide enter battle as one of over a hundred Dota heroes. And no matter if it's their 10th hour of play or 1,000th, there's always something new to discover. With regular updates that ensure a constant evolution of gameplay, features, and heroes, Dota 2 has taken on a life of its own.",
     developer: 'Valve',
@@ -310,6 +320,7 @@ export const gamesSeed = [
   {
     name: 'Monster Hunter: World',
     slug: 'monster-hunter-world',
+    steam_app_id: 582010,
     description:
       'Welcome to a new world! In Monster Hunter: World, the latest installment in the series, you can enjoy the ultimate hunting experience, using everything at your disposal to hunt monsters in a new world teeming with surprises and excitement.',
     developer: 'CAPCOM Co., Ltd.',
@@ -336,6 +347,7 @@ export const gamesSeed = [
   {
     name: 'Sekiro™: Shadows Die Twice - GOTY Edition',
     slug: 'sekiro-shadows-die-twice-goty-edition',
+    steam_app_id: 814380,
     description:
       'Game of the Year - The Game Awards 2019 Best Action Game of 2019 - IGN Carve your own clever path to vengeance in the award winning adventure from developer FromSoftware, creators of Bloodborne and the Dark Souls series. Take Revenge. Restore Your Honor. Kill Ingeniously.',
     developer: 'FromSoftware, Inc.',

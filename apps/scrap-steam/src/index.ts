@@ -24,6 +24,7 @@ interface SteamAppDetails {
 interface SteamGameData {
   name: string
   slug: string
+  steam_app_id: number
   description: string
   developer: string
   released_at: Date | null
@@ -88,6 +89,7 @@ async function getSteamGameData(
     return {
       name: game.name,
       slug,
+      steam_app_id: Number(appId),
       description: game.short_description || 'No description available',
       developer:
         game.developers?.[0] || game.publishers?.[0] || 'Unknown Developer',
@@ -103,6 +105,7 @@ async function getSteamGameData(
     return {
       name: '',
       slug: '',
+      steam_app_id: 0,
       description: '',
       developer: '',
       released_at: null,

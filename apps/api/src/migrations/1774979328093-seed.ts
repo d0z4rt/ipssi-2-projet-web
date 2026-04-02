@@ -164,11 +164,12 @@ export class Seed1774979328093 implements MigrationInterface {
     const insertedGames = new Map()
     for (const game of gamesSeed) {
       const result = await queryRunner.query(
-        `INSERT INTO games (name, slug, description, cover_image, banner_image, screenshots, platforms, developer, released_at, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) RETURNING id`,
+        `INSERT INTO games (name, slug, steam_app_id, description, cover_image, banner_image, screenshots, platforms, developer, released_at, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW()) RETURNING id`,
         [
           game.name,
           game.slug,
+          game.steam_app_id,
           game.description,
           game.cover_image,
           game.banner_image,

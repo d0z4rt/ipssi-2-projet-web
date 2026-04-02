@@ -17,6 +17,9 @@ export class Game {
   @Column({ type: 'varchar', length: 255, unique: true })
   slug!: string
 
+  @Column({ type: 'int', unique: true })
+  steam_app_id!: number
+
   @Column({ type: 'varchar', length: 255 })
   name!: string
 
