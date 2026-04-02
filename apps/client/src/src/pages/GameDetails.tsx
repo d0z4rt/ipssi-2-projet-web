@@ -13,7 +13,13 @@ import { useLocation, useParams } from 'react-router-dom'
 import { getRatingColor } from '../components/GameCard'
 import { ReviewCard } from '../components/ReviewCard'
 import { useAuth } from '../context/AuthContext'
-import { Game, Review, gameService, reviewService } from '../services/api'
+import {
+  API_BASE_URL,
+  Game,
+  Review,
+  gameService,
+  reviewService
+} from '../services/api'
 export const GameDetails: React.FC = () => {
   const { isAuthenticated, user } = useAuth()
   const location = useLocation()
@@ -210,7 +216,7 @@ export const GameDetails: React.FC = () => {
         <div className="absolute inset-0 overflow-hidden">
           {game.bannerImage || game.image ? (
             <img
-              src={game.bannerImage || game.image}
+              src={`${API_BASE_URL}/v1/${game.bannerImage || game.image}`}
               alt={game.title}
               onError={handleImageFallback}
               className="w-full h-full object-cover opacity-30 blur-sm"
@@ -228,7 +234,7 @@ export const GameDetails: React.FC = () => {
             {/* Cover Image */}
             <div className="w-[220px] shrink-0 rounded-md overflow-hidden border border-gray-700 shadow-2xl relative z-10 translate-y-16">
               <img
-                src={game.image}
+                src={`${API_BASE_URL}/v1/${game.image}`}
                 alt={game.title}
                 onError={handleImageFallback}
                 className="w-full h-auto object-cover aspect-[2/3]"
@@ -359,7 +365,7 @@ export const GameDetails: React.FC = () => {
                 </h3>
                 <div className="relative aspect-video bg-gray-900 rounded overflow-hidden group cursor-pointer border border-gray-800">
                   <img
-                    src={trailerPreview}
+                    src={`${API_BASE_URL}/v1/${trailerPreview}`}
                     alt="Trailer"
                     onError={handleImageFallback}
                     className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity"
@@ -393,7 +399,7 @@ export const GameDetails: React.FC = () => {
                       className="aspect-square bg-gray-800 rounded overflow-hidden"
                     >
                       <img
-                        src={imageUrl}
+                        src={`${API_BASE_URL}/v1/${imageUrl}`}
                         alt={`${game.title} screenshot ${index + 1}`}
                         loading="lazy"
                         onError={handleImageFallback}

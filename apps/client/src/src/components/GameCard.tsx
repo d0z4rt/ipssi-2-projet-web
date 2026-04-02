@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { Game } from '../services/api'
+import { API_BASE_URL, Game } from '../services/api'
 interface GameCardProps {
   game: Game
 }
@@ -31,7 +31,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-800 mb-3 shadow-lg group-hover:border-gray-600 transition-colors">
           {hasImage ? (
             <img
-              src={game.image}
+              src={`${API_BASE_URL}/v1/${game.image}`}
               alt={game.title}
               className="w-full h-full object-cover"
             />

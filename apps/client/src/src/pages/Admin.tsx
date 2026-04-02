@@ -18,7 +18,8 @@ import {
   gameService,
   Game,
   reviewService,
-  Review
+  Review,
+  API_BASE_URL
 } from '../services/api'
 
 const REVIEWS_PER_PAGE = 20
@@ -286,7 +287,7 @@ export const Admin: React.FC = () => {
                       >
                         <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
                           <img
-                            src={game.image}
+                            src={`${API_BASE_URL}/v1/${game.image}`}
                             alt={game.title}
                             className="w-10 h-10 rounded object-cover"
                           />

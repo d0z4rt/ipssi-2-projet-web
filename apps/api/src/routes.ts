@@ -3,8 +3,14 @@ import gameRoutes from '#games/game.routes.js'
 import reviewRoutes from '#reviews/review.routes.js'
 import usersRoutes from '#users/user.routes.js'
 import { type Handler, Router } from 'express'
+import express from 'express'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { logger } from './utils/logger.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const router = Router()
 
@@ -33,6 +39,15 @@ const defaultRoutes: { path: string; route: Handler }[] = [
   {
     path: '/v1/users',
     route: usersRoutes
+  },
+  {
+    path: '/v1/images',
+    route: express.static(path.join(__dirname, 'images'), {
+      setHeaders: (res) => {
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+        res.setHeader('Access-Control-Allow-Origin', '*')
+      }
+    })
   },
   {
     path: '/',

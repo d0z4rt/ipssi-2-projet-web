@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL =
+export const API_BASE_URL =
   (import.meta as ImportMeta & { env?: { VITE_API_URL?: string } }).env
     ?.VITE_API_URL ?? 'http://localhost:4000'
 const AUTH_USER_KEY = 'gamecritiq_user'
@@ -552,7 +552,7 @@ export const gameService = {
     return games
       .slice()
       .sort((left, right) => right.rating - left.rating)
-      .slice(0, 5)
+      .slice(0, 10)
   },
 
   getLatestReleases: async (): Promise<Game[]> => {
