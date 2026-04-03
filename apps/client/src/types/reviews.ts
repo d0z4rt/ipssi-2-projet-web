@@ -4,6 +4,7 @@ export type ReviewResponse = {
   content: string | null
   rating: number | null
   user_id: string
+  user: { id: string; username: string }
   game_id: string
   likes?: LikeResponse[] | null
   like_count: number

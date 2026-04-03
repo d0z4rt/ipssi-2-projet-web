@@ -79,7 +79,8 @@ const reviewService = {
         reviews_to_tags: {
           tag: true
         },
-        likes: true
+        likes: true,
+        user: true
       }
     })
   },
@@ -91,7 +92,8 @@ const reviewService = {
         reviews_to_tags: {
           tag: true
         },
-        likes: true
+        likes: true,
+        user: true
       }
     })
   },

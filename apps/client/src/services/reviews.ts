@@ -46,7 +46,7 @@ export const mapReview = (
     username:
       currentUserId && currentUserId === review.user_id
         ? (currentUsername ?? 'You')
-        : `Member ${review.user_id.slice(0, 6)}`,
+        : review.user.username,
     userReviewCount: reviewCountsByUserId?.get(review.user_id),
     rating: review.rating ?? 0,
     title: review.title,

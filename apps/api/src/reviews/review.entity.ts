@@ -64,10 +64,12 @@ export class Review {
    */
   toJSON() {
     const { reviews_to_tags: _, ...rest } = this
+    const { id, username } = this.user
     return {
       ...rest,
       tags: this.tags.map((t) => t.name),
-      like_count: this.likes?.length || 0
+      like_count: this.likes?.length || 0,
+      user: { id, username }
     }
   }
 }
