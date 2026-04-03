@@ -1,17 +1,18 @@
 import type { RequestHandler } from 'express'
 
 import authService from '#auth/auth.service.js'
+import { ApiError } from '#utils/errors.js'
 
 const authenticate: RequestHandler = async (req, res, next) => {
   const authHeader = req.headers.authorization
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ statusCode: 401, error: 'Unauthorized' })
+    next(new ApiError(401, 'Unauthorized'))
     return
   }
 
   const token = authHeader.split(' ')[1]
   if (!token) {
-    res.status(401).json({ statusCode: 401, error: 'Unauthorized' })
+    next(new ApiError(401, 'Unauthorized'))
     return
   }
 
@@ -21,8 +22,8 @@ const authenticate: RequestHandler = async (req, res, next) => {
     req.session = validSession
     next()
   } catch {
-    res.status(401).json({ statusCode: 401, error: 'Invalid session' })
-    return
+    // Generalize error to prevent leaking sensitive information
+    next(new ApiError(401, 'Unauthorized'))
   }
 }
 
