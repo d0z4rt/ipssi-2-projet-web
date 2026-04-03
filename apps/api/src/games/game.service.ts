@@ -1,18 +1,12 @@
+import { ApiError } from '#utils/errors.js'
+
 import { AppDataSource } from '../config/typeorm-datasource.js'
 import { Game } from './game.entity.js'
-import { GameUserStatus, GameUserStatusType } from './gameUserStatus.entity.js'
+import { GameUserStatusSchema } from './game.schemas.js'
+import { GameUserStatus } from './gameUserStatus.entity.js'
 
 const gameRepository = AppDataSource.getRepository(Game)
 const gameUserStatusRepository = AppDataSource.getRepository(GameUserStatus)
-
-type GameStatusSummary = Record<GameUserStatusType, number>
-
-const createEmptyStatusSummary = (): GameStatusSummary => ({
-  played: 0,
-  want_to_play: 0,
-  playing: 0,
-  favorite: 0
-})
 
 const gameService = {
   getAll: async () => {
@@ -30,15 +24,20 @@ const gameService = {
       ]
     })
   },
-  getUserStatusesByGame: async (gameId: string, userId: string) => {
-    const statuses = await gameUserStatusRepository.find({
+  getUserStatusByGame: async (gameId: string, userId: string) => {
+    const game = await gameRepository.findOne({ where: { id: gameId } })
+    if (!game) {
+      throw new ApiError(404, 'Jeu non trouvé')
+    }
+
+    const status = await gameUserStatusRepository.findOne({
       where: {
         game_id: gameId,
         user_id: userId
       }
     })
 
-    return statuses.map((status) => status.status)
+    return status
   },
   getAllUserGameStatuses: async (userId: string) => {
     const entries = await gameUserStatusRepository.find({
@@ -47,56 +46,13 @@ const gameService = {
       },
       relations: ['game']
     })
-
-    const groupedByGameId = new Map<
-      string,
-      {
-        game: Game
-        statuses: GameUserStatusType[]
-      }
-    >()
-
-    for (const entry of entries) {
-      const current = groupedByGameId.get(entry.game_id)
-      if (!current) {
-        groupedByGameId.set(entry.game_id, {
-          game: entry.game,
-          statuses: [entry.status]
-        })
-        continue
-      }
-      if (!current.statuses.includes(entry.status)) {
-        current.statuses.push(entry.status)
-      }
-    }
-
-    return Array.from(groupedByGameId.values())
-  },
-  getIncompatibleStatus: (
-    activeStatuses: GameUserStatusType[],
-    nextStatus: GameUserStatusType
-  ): GameUserStatusType | null => {
-    const incompatibleByStatus: Record<
-      GameUserStatusType,
-      GameUserStatusType[]
-    > = {
-      played: [GameUserStatusType.PLAYING],
-      playing: [GameUserStatusType.PLAYED],
-      want_to_play: [GameUserStatusType.FAVORITE],
-      favorite: [GameUserStatusType.WANT_TO_PLAY]
-    }
-
-    return (
-      activeStatuses.find((status) =>
-        incompatibleByStatus[nextStatus].includes(status)
-      ) ?? null
-    )
+    return entries
   },
   getStatusSummaryByGame: async (gameId: string) => {
     const game = await gameRepository.findOne({ where: { id: gameId } })
 
     if (!game) {
-      return null
+      throw new ApiError(404, 'Jeu non trouvé')
     }
 
     const entries = await gameUserStatusRepository.find({
@@ -105,10 +61,20 @@ const gameService = {
       }
     })
 
-    const summary = createEmptyStatusSummary()
+    const summary = {
+      played: 0,
+      want_to_play: 0,
+      playing: 0,
+      favorite: 0
+    }
 
     for (const entry of entries) {
-      summary[entry.status] += 1
+      if (entry.status) {
+        summary[entry.status] += 1
+      }
+      if (entry.is_favorite) {
+        summary.favorite += 1
+      }
     }
 
     return summary
@@ -116,37 +82,41 @@ const gameService = {
   setUserStatusByGame: async (
     gameId: string,
     userId: string,
-    status: GameUserStatusType,
-    active: boolean
+    dto: GameUserStatusSchema
   ) => {
     const game = await gameRepository.findOne({ where: { id: gameId } })
 
     if (!game) {
-      return null
+      throw new ApiError(404, 'Jeu non trouvé')
     }
 
     const existing = await gameUserStatusRepository.findOne({
       where: {
         game_id: gameId,
-        user_id: userId,
-        status
+        user_id: userId
       }
     })
 
-    if (active) {
+    if (dto.active) {
       if (!existing) {
         const created = gameUserStatusRepository.create({
           game_id: gameId,
           user_id: userId,
-          status
+          is_favorite: !!dto.is_favorite,
+          status: dto.status
         })
         await gameUserStatusRepository.save(created)
+      } else {
+        await gameUserStatusRepository.update(existing.id, {
+          is_favorite: !!dto.is_favorite,
+          status: dto.status
+        })
       }
     } else if (existing) {
       await gameUserStatusRepository.remove(existing)
     }
 
-    return gameService.getUserStatusesByGame(gameId, userId)
+    return gameService.getUserStatusByGame(gameId, userId)
   }
 }
 

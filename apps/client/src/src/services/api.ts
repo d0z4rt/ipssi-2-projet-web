@@ -48,9 +48,9 @@ export interface Game {
   likeCount?: number
 }
 
-export type GameUserStatus = 'played' | 'want_to_play' | 'playing' | 'favorite'
+export type GameUserStatus = 'played' | 'want_to_play' | 'playing'
 
-export type GameStatusSummary = Record<GameUserStatus, number>
+export type GameStatusSummary = Record<GameUserStatus | 'favorite', number>
 
 export interface UserGameWithStatuses {
   game: Game
@@ -152,7 +152,11 @@ type ApiReview = {
 }
 
 type ApiGameStatusesResponse = {
-  statuses: GameUserStatus[]
+  id: string
+  game_id: string
+  user_id: string
+  is_favorite: boolean
+  status: GameUserStatus
 }
 
 type ApiGameStatusSummaryResponse = {
@@ -589,7 +593,7 @@ export const gameService = {
       .slice(0, 5)
   },
 
-  getMyStatuses: async (gameId: string): Promise<GameUserStatus[]> => {
+  getMyStatus: async (gameId: string): Promise<ApiGameStatusesResponse> => {
     try {
       const response = await api.get<ApiGameStatusesResponse>(
         `/v1/games/${gameId}/status`,
@@ -597,7 +601,7 @@ export const gameService = {
           headers: getAuthHeaders()
         }
       )
-      return response.data.statuses
+      return response.data
     } catch (error) {
       throw new Error(
         getApiErrorMessage(
@@ -624,21 +628,23 @@ export const gameService = {
 
   setMyStatus: async (
     gameId: string,
-    status: GameUserStatus,
+    status: GameUserStatus | null,
+    isFavorite: boolean,
     active: boolean
-  ): Promise<GameUserStatus[]> => {
+  ) => {
     try {
       const response = await api.put<ApiGameStatusesResponse>(
         `/v1/games/${gameId}/status`,
         {
           status,
-          active
+          active,
+          is_favorite: isFavorite
         },
         {
           headers: getAuthHeaders()
         }
       )
-      return response.data.statuses
+      return response.data
     } catch (error) {
       throw new Error(
         getApiErrorMessage(error, 'Unable to update your game status')
@@ -649,7 +655,7 @@ export const gameService = {
   getMyGamesWithStatuses: async (): Promise<UserGameWithStatuses[]> => {
     try {
       const response = await api.get<ApiUserGameWithStatuses[]>(
-        '/v1/games/statuses/me',
+        '/v1/games/status/me',
         {
           headers: getAuthHeaders()
         }
