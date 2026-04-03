@@ -135,6 +135,19 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
           <p className="text-gray-300 text-sm leading-relaxed mb-3 line-clamp-4">
             {localReview.content}
           </p>
+
+          {localReview.tags && localReview.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {localReview.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-blue-300"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Footer */}

@@ -51,7 +51,7 @@ const statusIconMap: Record<
 }
 
 export const Dashboard: React.FC = () => {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<DashboardTab>('reviews')
   const [userReviews, setUserReviews] = useState<Review[]>([])
   const [userGames, setUserGames] = useState<UserGameWithStatuses[]>([])
@@ -172,6 +172,14 @@ export const Dashboard: React.FC = () => {
       setIsDeletingReviewId(null)
       setReviewIdToDelete(null)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-darkBg">
+        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
   }
 
   if (!isAuthenticated) {

@@ -25,7 +25,7 @@ import {
 const REVIEWS_PER_PAGE = 20
 
 export const Admin: React.FC = () => {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<'overview' | 'games' | 'reviews'>(
     'overview'
   )
@@ -117,6 +117,14 @@ export const Admin: React.FC = () => {
       setReviewsPage(totalReviewPages)
     }
   }, [reviewsPage, totalReviewPages])
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-darkBg">
+        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated || user?.role !== 'admin') {
     return <Navigate to="/" replace />
