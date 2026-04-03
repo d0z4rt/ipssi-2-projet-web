@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
+import { formFieldWithIconClassName } from '../styles/form'
 export const Register: React.FC = () => {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -87,7 +88,7 @@ export const Register: React.FC = () => {
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldWithIconClassName}
                   placeholder="GamerTag"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -105,7 +106,7 @@ export const Register: React.FC = () => {
                 </div>
                 <input
                   type="email"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldWithIconClassName}
                   placeholder="gamer@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -123,7 +124,7 @@ export const Register: React.FC = () => {
                 </div>
                 <input
                   type="password"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldWithIconClassName}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -141,7 +142,7 @@ export const Register: React.FC = () => {
                 </div>
                 <input
                   type="password"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldWithIconClassName}
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

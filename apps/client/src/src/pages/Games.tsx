@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Filter, X, Gamepad2 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
+import { FullPageSpinner } from '../components/FullPageSpinner'
 import { GameCard } from '../components/GameCard'
 import { Game, gameService } from '../services/api'
 export const Games: React.FC = () => {
@@ -242,9 +243,7 @@ export const Games: React.FC = () => {
 
       {/* Results */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <FullPageSpinner className="min-h-0 py-20 bg-transparent" />
       ) : filteredGames.length > 0 ? (
         <>
           <p className="text-gray-400 mb-6 text-sm">

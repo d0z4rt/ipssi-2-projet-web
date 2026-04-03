@@ -11,6 +11,11 @@ import {
 import React, { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 
+import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { FullPageSpinner } from '../components/FullPageSpinner'
+import { StatCard } from '../components/StatCard'
+import { TabBar } from '../components/TabBar'
 import { useAuth } from '../context/AuthContext'
 import {
   adminService,
@@ -119,11 +124,7 @@ export const Admin: React.FC = () => {
   }, [reviewsPage, totalReviewPages])
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-darkBg">
-        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
+    return <FullPageSpinner />
   }
 
   if (!isAuthenticated || user?.role !== 'admin') {
@@ -143,36 +144,16 @@ export const Admin: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-800 mb-8">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`px-6 py-3 font-medium text-sm transition-colors relative ${activeTab === 'overview' ? 'text-accent' : 'text-gray-400 hover:text-white'}`}
-        >
-          Overview
-          {activeTab === 'overview' && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></div>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('games')}
-          className={`px-6 py-3 font-medium text-sm transition-colors relative ${activeTab === 'games' ? 'text-accent' : 'text-gray-400 hover:text-white'}`}
-        >
-          Manage Games
-          {activeTab === 'games' && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></div>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('reviews')}
-          className={`px-6 py-3 font-medium text-sm transition-colors relative ${activeTab === 'reviews' ? 'text-accent' : 'text-gray-400 hover:text-white'}`}
-        >
-          Moderation
-          {activeTab === 'reviews' && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-accent"></div>
-          )}
-        </button>
-      </div>
+      <TabBar
+        className="mb-8"
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { value: 'overview', label: 'Overview' },
+          { value: 'games', label: 'Manage Games' },
+          { value: 'reviews', label: 'Moderation' }
+        ]}
+      />
 
       {loading ? (
         <div className="flex justify-center py-20">
@@ -184,35 +165,24 @@ export const Admin: React.FC = () => {
           {activeTab === 'overview' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-cardBg border border-gray-800 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-gray-400 font-medium">Total Users</h3>
-                    <Users className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <p className="text-3xl font-orbitron font-bold text-white">
-                    {(stats.users ?? users.length).toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="bg-cardBg border border-gray-800 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-gray-400 font-medium">Total Games</h3>
-                    <Gamepad2 className="w-5 h-5 text-green-400" />
-                  </div>
-                  <p className="text-3xl font-orbitron font-bold text-white">
-                    {stats.games.toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="bg-cardBg border border-gray-800 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-gray-400 font-medium">Total Reviews</h3>
-                    <MessageSquare className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <p className="text-3xl font-orbitron font-bold text-white">
-                    {stats.reviews.toLocaleString()}
-                  </p>
-                </div>
+                <StatCard
+                  icon={Users}
+                  label="Total Users"
+                  value={(stats.users ?? users.length).toLocaleString()}
+                  accentClassName="bg-blue-500/10 text-blue-400"
+                />
+                <StatCard
+                  icon={Gamepad2}
+                  label="Total Games"
+                  value={stats.games.toLocaleString()}
+                  accentClassName="bg-green-500/10 text-green-400"
+                />
+                <StatCard
+                  icon={MessageSquare}
+                  label="Total Reviews"
+                  value={stats.reviews.toLocaleString()}
+                  accentClassName="bg-purple-500/10 text-purple-400"
+                />
               </div>
 
               <div className="mt-6 sm:col-span-2 lg:col-span-4 bg-cardBg border border-gray-800 rounded-xl overflow-hidden">
@@ -370,9 +340,7 @@ export const Admin: React.FC = () => {
                 </div>
               </div>
               {moderationError && (
-                <div className="mx-4 mt-4 rounded border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                  {moderationError}
-                </div>
+                <ErrorBanner message={moderationError} className="mx-4 mt-4" />
               )}
               {reviews.length > 0 ? (
                 <div className="divide-y divide-gray-800">
@@ -467,38 +435,14 @@ export const Admin: React.FC = () => {
             </div>
           )}
 
-          {reviewIdToDelete && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-md rounded-xl border border-gray-800 bg-cardBg p-5 shadow-2xl">
-                <h3 className="text-lg font-semibold text-white">
-                  Confirmer la suppression
-                </h3>
-                <p className="mt-2 text-sm text-gray-300">
-                  Cette action supprimera definitivement la critique.
-                </p>
-                <div className="mt-5 flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setReviewIdToDelete(null)}
-                    disabled={isDeletingReviewId === reviewIdToDelete}
-                    className="rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-50"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleDeleteReviewFromModeration()}
-                    disabled={isDeletingReviewId === reviewIdToDelete}
-                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
-                  >
-                    {isDeletingReviewId === reviewIdToDelete
-                      ? 'Suppression...'
-                      : 'Confirmer'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ConfirmDeleteModal
+            isOpen={Boolean(reviewIdToDelete)}
+            isDeleting={Boolean(
+              reviewIdToDelete && isDeletingReviewId === reviewIdToDelete
+            )}
+            onCancel={() => setReviewIdToDelete(null)}
+            onConfirm={() => void handleDeleteReviewFromModeration()}
+          />
         </>
       )}
     </div>

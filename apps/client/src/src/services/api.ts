@@ -1,5 +1,46 @@
 import axios from 'axios'
 
+import type {
+  AdminUser,
+  ApiAuthResponse,
+  ApiAuthUser,
+  ApiGame,
+  ApiGameStatusesResponse,
+  ApiGameStatusSummaryResponse,
+  ApiReview,
+  ApiUserGameWithStatuses,
+  AuthSession,
+  AuthUser,
+  Catalog,
+  ContactRequest,
+  ContactResponse,
+  Game,
+  GameStatusSummary,
+  GameUserStatus,
+  Review,
+  UserGameWithStatuses
+} from './api-types'
+
+import {
+  getReviewStatsByGame,
+  mapGame,
+  mapReview,
+  normalizeSlug
+} from './api-mappers'
+
+export type {
+  AdminUser,
+  AuthSession,
+  AuthUser,
+  ContactRequest,
+  ContactResponse,
+  Game,
+  GameStatusSummary,
+  GameUserStatus,
+  Review,
+  UserGameWithStatuses
+} from './api-types'
+
 export const API_BASE_URL =
   (import.meta as ImportMeta & { env?: { VITE_API_URL?: string } }).env
     ?.VITE_API_URL ?? 'http://localhost:4000'
@@ -12,172 +53,6 @@ export const api = axios.create({
     'Content-Type': 'application/json'
   }
 })
-
-type Role = 'user' | 'curator' | 'admin'
-
-export interface AuthUser {
-  id: string
-  username: string
-  email: string
-  role: Role
-  isCurator: boolean
-  isAdmin: boolean
-}
-
-export interface AuthSession {
-  token: string
-  expiresAt: string
-  user: AuthUser
-}
-
-export interface Game {
-  id: string
-  slug: string
-  title: string
-  steamAppId?: string
-  description: string
-  genre: string
-  platform: string[]
-  rating: number
-  image: string
-  bannerImage?: string
-  screenshots?: string[]
-  releaseDate: string
-  developer: string
-  reviewCount?: number
-  likeCount?: number
-}
-
-export type GameUserStatus = 'played' | 'want_to_play' | 'playing'
-
-export type GameStatusSummary = Record<GameUserStatus | 'favorite', number>
-
-export interface UserGameWithStatuses {
-  game: Game
-  statuses: GameUserStatus[]
-}
-
-export interface Review {
-  id: string
-  gameId: string
-  gameTitle?: string
-  gameImage?: string
-  userId: string
-  username: string
-  userReviewCount?: number
-  rating: number
-  title?: string
-  content: string
-  likes: number
-  createdAt: string
-  liked: boolean
-  isPositive?: boolean
-  tags?: string[]
-}
-
-export interface ContactRequest {
-  firstName: string
-  lastName: string
-  email: string
-  subject: string
-  category: 'support' | 'bug-report' | 'business' | 'other'
-  message: string
-  acceptedPolicy: boolean
-}
-
-export interface ContactResponse {
-  id: string
-  status: 'received'
-  createdAt: string
-}
-
-export interface AdminUser {
-  id: string
-  username: string
-  mail: string
-  is_admin: boolean
-  is_curator: boolean
-  created_at: string
-}
-
-type ApiAuthUser = {
-  id: string
-  username: string
-  mail: string
-  is_admin: boolean
-  is_curator: boolean
-}
-
-type ApiAuthResponse = {
-  token: string
-  expires_at: string
-  user: ApiAuthUser
-}
-
-type ApiGame = {
-  id: string
-  slug: string
-  name: string
-  steam_app_id?: number | string | null
-  description: string | null
-  cover_image: string | null
-  banner_image: string | null
-  screenshots: string[] | null
-  platforms: string[] | null
-  developer: string | null
-  released_at: string | null
-  categories: string[] | null
-  reviews?: ApiReview[] | null
-}
-
-type ApiLike = {
-  review_id: string
-  user_id: string
-}
-
-type ApiReviewTag = {
-  tag?: { name: string } | null
-}
-
-type ApiReview = {
-  id: string
-  title: string
-  content: string | null
-  rating: number | null
-  user_id: string
-  game_id: string
-  created_at: string
-  likes?: number | ApiLike[] | null
-  reviews_to_tags?: ApiReviewTag[] | null
-}
-
-type ApiGameStatusesResponse = {
-  id: string
-  game_id: string
-  user_id: string
-  is_favorite: boolean
-  status: GameUserStatus
-}
-
-type ApiGameStatusSummaryResponse = {
-  summary: GameStatusSummary
-}
-
-type ApiUserGameWithStatuses = {
-  game: ApiGame
-  statuses: GameUserStatus[]
-}
-
-type Catalog = {
-  games: ApiGame[]
-  reviews: ApiReview[]
-}
-
-type GameStats = {
-  rating: number
-  reviewCount: number
-  likeCount: number
-}
 
 let catalogPromise: Promise<Catalog> | null = null
 let gameSnapshotById = new Map<string, Game>()
@@ -204,17 +79,6 @@ const setAuthToken = (token: string | null) => {
     localStorage.removeItem(AUTH_TOKEN_KEY)
   }
 }
-
-const normalizeSlug = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-
-const createPlaceholderImage = (title: string, width: number, height: number) =>
-  `https://placehold.co/${width}x${height}/111827/e5e7eb?text=${encodeURIComponent(title)}`
 
 const invalidateCatalog = () => {
   catalogPromise = null
@@ -285,51 +149,6 @@ const loadCatalog = async (): Promise<Catalog> => {
   }
 }
 
-const getReviewStatsByGame = (reviews: ApiReview[]) => {
-  const statsByGameId = new Map<string, GameStats>()
-
-  for (const review of reviews) {
-    const current = statsByGameId.get(review.game_id) ?? {
-      rating: 0,
-      reviewCount: 0,
-      likeCount: 0
-    }
-
-    const nextReviewCount = current.reviewCount + 1
-    const reviewRating = review.rating ?? 0
-    const nextRating =
-      (current.rating * current.reviewCount + reviewRating) / nextReviewCount
-
-    statsByGameId.set(review.game_id, {
-      rating: Number.isFinite(nextRating) ? nextRating : 0,
-      reviewCount: nextReviewCount,
-      likeCount: current.likeCount + getReviewLikesCount(review)
-    })
-  }
-
-  return statsByGameId
-}
-
-const mapGame = (game: ApiGame, stats?: GameStats): Game => ({
-  id: game.id,
-  slug: game.slug || normalizeSlug(game.name),
-  title: game.name,
-  steamAppId: game.steam_app_id == null ? undefined : String(game.steam_app_id),
-  description: game.description ?? '',
-  genre: game.categories?.[0] ?? 'Unknown',
-  platform: game.platforms ?? [],
-  rating: stats?.rating ?? 0,
-  image: game.cover_image ?? createPlaceholderImage(game.name, 600, 900),
-  bannerImage:
-    game.banner_image ??
-    createPlaceholderImage(`${game.name} banner`, 1600, 900),
-  screenshots: game.screenshots ?? undefined,
-  releaseDate: game.released_at ?? new Date(0).toISOString(),
-  developer: game.developer ?? 'Unknown',
-  reviewCount: stats?.reviewCount,
-  likeCount: stats?.likeCount
-})
-
 const updateGameSnapshots = (games: Game[]) => {
   gameSnapshotById = new Map(games.map((game) => [game.id, game]))
   gameSnapshotBySlug = new Map(games.map((game) => [game.slug, game]))
@@ -373,61 +192,6 @@ const getApiErrorMessage = (error: unknown, fallbackMessage: string) => {
   return fallbackMessage
 }
 
-const getReviewLikesCount = (review: ApiReview) => {
-  if (Array.isArray(review.likes)) {
-    return review.likes.length
-  }
-
-  if (typeof review.likes === 'number') {
-    return review.likes
-  }
-
-  return 0
-}
-
-const getReviewLikedByUser = (review: ApiReview, userId?: string | null) => {
-  if (!userId || !Array.isArray(review.likes)) {
-    return false
-  }
-
-  return review.likes.some((like) => like.user_id === userId)
-}
-
-const mapReview = (
-  review: ApiReview,
-  catalog: Catalog,
-  currentUserId?: string | null,
-  reviewCountsByUserId?: Map<string, number>
-): Review => {
-  const game = catalog.games.find((entry) => entry.id === review.game_id)
-  const currentUser = currentUserId ? getStoredUser() : null
-  const likes = getReviewLikesCount(review)
-  const liked = getReviewLikedByUser(review, currentUserId)
-
-  return {
-    id: review.id,
-    gameId: review.game_id,
-    gameTitle: game?.name ?? game?.slug,
-    gameImage: game?.cover_image ?? game?.banner_image ?? undefined,
-    userId: review.user_id,
-    username:
-      currentUserId && currentUserId === review.user_id
-        ? (currentUser?.username ?? 'You')
-        : `Member ${review.user_id.slice(0, 6)}`,
-    userReviewCount: reviewCountsByUserId?.get(review.user_id),
-    rating: review.rating ?? 0,
-    title: review.title,
-    content: review.content ?? '',
-    likes,
-    createdAt: review.created_at,
-    liked,
-    isPositive: review.rating == null ? undefined : review.rating >= 6,
-    tags: review.reviews_to_tags
-      ?.map((entry) => entry.tag?.name)
-      .filter(Boolean) as string[] | undefined
-  }
-}
-
 const buildReviewCatalog = async (): Promise<Review[]> => {
   const catalog = await loadCatalog()
   const currentUser = getStoredUser()
@@ -448,7 +212,13 @@ const buildReviewCatalog = async (): Promise<Review[]> => {
         new Date(left.created_at).getTime()
     )
     .map((review) =>
-      mapReview(review, catalog, currentUser?.id, reviewCountsByUserId)
+      mapReview(
+        review,
+        catalog,
+        currentUser?.id,
+        currentUser?.username,
+        reviewCountsByUserId
+      )
     )
 }
 
@@ -469,7 +239,13 @@ const refreshReviewById = async (reviewId: string): Promise<Review> => {
     throw new Error('Review not found')
   }
 
-  return mapReview(review, catalog, currentUser?.id, reviewCountsByUserId)
+  return mapReview(
+    review,
+    catalog,
+    currentUser?.id,
+    currentUser?.username,
+    reviewCountsByUserId
+  )
 }
 
 export const getGameSlugById = (gameId: string): string | undefined =>
@@ -738,6 +514,7 @@ export const reviewService = {
         response.data,
         nextCatalog,
         getStoredUser()?.id,
+        getStoredUser()?.username,
         reviewCountsByUserId
       )
     } catch (error) {
@@ -783,6 +560,7 @@ export const reviewService = {
       response.data,
       nextCatalog,
       getStoredUser()?.id,
+      getStoredUser()?.username,
       reviewCountsByUserId
     )
   },
