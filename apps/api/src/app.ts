@@ -15,7 +15,14 @@ app.disable('x-powered-by')
 app.use(helmet())
 
 // ! Enable cors, edit for production
-app.use(cors())
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+)
 // app.use(
 //   cors({
 //     origin: true,
