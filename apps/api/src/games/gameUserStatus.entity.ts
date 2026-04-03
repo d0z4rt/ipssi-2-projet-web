@@ -4,8 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique
+  PrimaryGeneratedColumn
 } from 'typeorm'
 
 import { Game } from './game.entity.js'
@@ -13,27 +12,29 @@ import { Game } from './game.entity.js'
 export enum GameUserStatusType {
   PLAYED = 'played',
   WANT_TO_PLAY = 'want_to_play',
-  PLAYING = 'playing',
-  FAVORITE = 'favorite'
+  PLAYING = 'playing'
 }
 
 @Entity('games_users_statuses')
-@Unique('uq_game_user_status', ['game_id', 'user_id', 'status'])
 export class GameUserStatus {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', unique: true })
   game_id!: string
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', unique: true })
   user_id!: string
+
+  @Column({ type: 'boolean', default: false })
+  is_favorite!: boolean
 
   @Column({
     type: 'enum',
-    enum: GameUserStatusType
+    enum: GameUserStatusType,
+    nullable: true
   })
-  status!: GameUserStatusType
+  status: GameUserStatusType | null = null
 
   @ManyToOne(() => Game, (game) => game.user_statuses, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'game_id' })

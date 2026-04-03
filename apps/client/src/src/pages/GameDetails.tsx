@@ -16,7 +16,7 @@ import {
 } from '../services/api'
 
 type StatusButtonConfig = {
-  status: GameUserStatus
+  status: GameUserStatus | 'favorite'
   label: string
   icon: React.ComponentType<{ className?: string }>
 }
@@ -46,7 +46,10 @@ const STATUS_BUTTONS: StatusButtonConfig[] = [
   }
 ]
 
-const createStatusLoadingState = (): Record<GameUserStatus, boolean> => ({
+const createStatusLoadingState = (): Record<
+  GameUserStatus | 'favorite',
+  boolean
+> => ({
   played: false,
   want_to_play: false,
   playing: false,
@@ -59,46 +62,6 @@ const createEmptyStatusSummary = (): GameStatusSummary => ({
   playing: 0,
   favorite: 0
 })
-
-const areStatusesIncompatible = (
-  activeStatus: GameUserStatus,
-  nextStatus: GameUserStatus
-) => {
-  const isWantToPlayWithFavorite =
-    (activeStatus === 'want_to_play' && nextStatus === 'favorite') ||
-    (activeStatus === 'favorite' && nextStatus === 'want_to_play')
-
-  const isPlayedWithPlaying =
-    (activeStatus === 'played' && nextStatus === 'playing') ||
-    (activeStatus === 'playing' && nextStatus === 'played')
-
-  return isWantToPlayWithFavorite || isPlayedWithPlaying
-}
-
-const getIncompatibilityMessage = (
-  activeStatus: GameUserStatus,
-  nextStatus: GameUserStatus
-) => {
-  if (
-    (activeStatus === 'want_to_play' && nextStatus === 'favorite') ||
-    (activeStatus === 'favorite' && nextStatus === 'want_to_play')
-  ) {
-    return nextStatus === 'favorite'
-      ? "Retirez d'abord le statut Envie d'y jouer pour mettre Coup de coeur."
-      : "Retirez d'abord le statut Coup de coeur pour mettre Envie d'y jouer."
-  }
-
-  if (
-    (activeStatus === 'played' && nextStatus === 'playing') ||
-    (activeStatus === 'playing' && nextStatus === 'played')
-  ) {
-    return nextStatus === 'played'
-      ? "Retirez d'abord le statut En cours pour mettre Fini."
-      : "Retirez d'abord le statut Fini pour mettre En cours."
-  }
-
-  return 'Ce statut est incompatible avec un statut deja actif.'
-}
 
 export const GameDetails: React.FC = () => {
   const { isAuthenticated, user } = useAuth()
@@ -117,14 +80,15 @@ export const GameDetails: React.FC = () => {
   const [reviewContent, setReviewContent] = useState('')
   const [reviewTags, setReviewTags] = useState('')
   const [reviewSort, setReviewSort] = useState<ReviewSortOption>('most_liked')
-  const [gameStatuses, setGameStatuses] = useState<GameUserStatus[]>([])
+  const [gameStatus, setGameStatus] = useState<GameUserStatus | null>(null)
+  const [gameFavorite, setGameFavorite] = useState<boolean>(false)
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(false)
   const [statusSummary, setStatusSummary] = useState<GameStatusSummary>(
     createEmptyStatusSummary
   )
   const [statusError, setStatusError] = useState('')
   const [statusLoadingByType, setStatusLoadingByType] = useState<
-    Record<GameUserStatus, boolean>
+    Record<GameUserStatus | 'favorite', boolean>
   >(createStatusLoadingState)
   useEffect(() => {
     const fetchGameData = async () => {
@@ -176,17 +140,17 @@ export const GameDetails: React.FC = () => {
   }, [loading, location.hash, reviews])
 
   useEffect(() => {
-    const fetchStatuses = async () => {
+    const fetchStatus = async () => {
       if (!game || !isAuthenticated) {
-        setGameStatuses([])
+        setGameStatus(null)
         return
       }
 
       setIsLoadingStatuses(true)
       setStatusError('')
       try {
-        const statuses = await gameService.getMyStatuses(game.id)
-        setGameStatuses(statuses)
+        const status = await gameService.getMyStatus(game.id)
+        setGameStatus(status.status)
       } catch (error) {
         setStatusError(
           error instanceof Error
@@ -198,7 +162,7 @@ export const GameDetails: React.FC = () => {
       }
     }
 
-    void fetchStatuses()
+    void fetchStatus()
   }, [game, isAuthenticated])
 
   useEffect(() => {
@@ -316,9 +280,7 @@ export const GameDetails: React.FC = () => {
     event.currentTarget.src = game.image
   }
 
-  const hasStatus = (status: GameUserStatus) => gameStatuses.includes(status)
-
-  const toggleStatus = async (status: GameUserStatus) => {
+  const toggleStatus = async (status: GameUserStatus | 'favorite') => {
     if (!game) {
       return
     }
@@ -328,24 +290,6 @@ export const GameDetails: React.FC = () => {
       return
     }
 
-    const nextActive = !hasStatus(status)
-
-    if (nextActive) {
-      const conflictingStatus = gameStatuses.find((activeStatus) =>
-        areStatusesIncompatible(activeStatus, status)
-      )
-
-      if (conflictingStatus) {
-        const conflictMessage = getIncompatibilityMessage(
-          conflictingStatus,
-          status
-        )
-
-        setStatusError(conflictMessage)
-        return
-      }
-    }
-
     setStatusError('')
     setStatusLoadingByType((current) => ({
       ...current,
@@ -353,12 +297,30 @@ export const GameDetails: React.FC = () => {
     }))
 
     try {
-      const statuses = await gameService.setMyStatus(
-        game.id,
-        status,
-        nextActive
-      )
-      setGameStatuses(statuses)
+      if (status === 'favorite') {
+        const res = await gameService.setMyStatus(
+          game.id,
+          gameStatus,
+          !gameFavorite,
+          true
+        )
+        setGameStatus(res.status)
+        setGameFavorite(res.is_favorite)
+      } else {
+        let newStatus: GameUserStatus | null = status
+        if (gameStatus === status) {
+          setGameStatus(null)
+          newStatus = null
+        }
+        const res = await gameService.setMyStatus(
+          game.id,
+          newStatus,
+          gameFavorite,
+          true
+        )
+        setGameStatus(res.status)
+        setGameFavorite(res.is_favorite)
+      }
 
       try {
         const summary = await gameService.getStatusSummary(game.id)
@@ -568,7 +530,9 @@ export const GameDetails: React.FC = () => {
 
               <div className="space-y-1">
                 {STATUS_BUTTONS.map(({ status, label, icon: Icon }) => {
-                  const active = hasStatus(status)
+                  const active =
+                    gameStatus === status ||
+                    (status === 'favorite' && gameFavorite)
                   const loadingStatus = statusLoadingByType[status]
 
                   return (
