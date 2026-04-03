@@ -45,8 +45,8 @@ export const useGameStatus = (
       setStatusError('')
       try {
         const status = await gameService.getMyStatus(gameId)
-        setGameStatus(status.status)
-        setGameFavorite(status.is_favorite)
+        setGameStatus(status?.status || null)
+        setGameFavorite(status?.is_favorite || false)
       } catch (error) {
         setStatusError(
           error instanceof Error
@@ -117,8 +117,8 @@ export const useGameStatus = (
           !gameFavorite,
           true
         )
-        setGameStatus(res.status)
-        setGameFavorite(res.is_favorite)
+        setGameStatus(res?.status || null)
+        setGameFavorite(res?.is_favorite || false)
       } else {
         let newStatus: GameUserStatusType | null = status
         if (gameStatus === status) {
@@ -131,8 +131,8 @@ export const useGameStatus = (
           gameFavorite,
           true
         )
-        setGameStatus(res.status)
-        setGameFavorite(res.is_favorite)
+        setGameStatus(res?.status || null)
+        setGameFavorite(res?.is_favorite || false)
       }
 
       try {

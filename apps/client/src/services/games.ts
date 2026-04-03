@@ -177,9 +177,11 @@ export const gameService = {
       .slice(0, 5)
   },
 
-  getMyStatus: async (gameId: string): Promise<GameUserStatusResponse> => {
+  getMyStatus: async (
+    gameId: string
+  ): Promise<GameUserStatusResponse | null> => {
     try {
-      const response = await api.get<GameUserStatusResponse>(
+      const response = await api.get<GameUserStatusResponse | null>(
         `/v1/games/${gameId}/status`,
         {
           headers: getAuthHeaders()
@@ -219,7 +221,7 @@ export const gameService = {
     active: boolean
   ) => {
     try {
-      const response = await api.put<GameUserStatusResponse>(
+      const response = await api.put<GameUserStatusResponse | null>(
         `/v1/games/${gameId}/status`,
         {
           status,

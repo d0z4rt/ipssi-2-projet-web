@@ -32,7 +32,7 @@ export type GameUserStatusResponse = {
   game_id: string
   user_id: string
   is_favorite: boolean
-  status: GameUserStatusType
+  status: GameUserStatusType | null
 }
 
 export type GameUserStatusRequest = {
