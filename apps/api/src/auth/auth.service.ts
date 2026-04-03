@@ -2,6 +2,7 @@ import userService from '#users/user.service.js'
 import { ApiError } from '#utils/errors.js'
 import * as argon2 from 'argon2'
 import crypto from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { MoreThan } from 'typeorm'
 
 import { AppDataSource } from '../config/typeorm-datasource.js'
@@ -12,22 +13,27 @@ const sessionRepository = AppDataSource.getRepository(Session)
 
 const authService = {
   login: async (dto: LoginSchema) => {
-    const user = await userService.getOneByMail(dto.mail)
+    try {
+      const user = await userService.getOneByMail(dto.mail)
 
-    if (!user) {
-      throw new ApiError(401, 'User not found')
+      if (!user) {
+        throw new ApiError(401, 'User not found')
+      }
+
+      const isValidPassword = await argon2.verify(user.password, dto.password)
+      if (!isValidPassword) {
+        throw new ApiError(403, 'Invalid password')
+      }
+
+      const { token, tokenHash } = await authService.generateToken()
+
+      const session = await authService.createSession(user.id, tokenHash)
+
+      return { token, session, user }
+    } catch {
+      // Prevent enumerating users by throwing a generic error
+      throw new ApiError(401, 'Invalid credentials')
     }
-
-    const isValidPassword = await argon2.verify(user.password, dto.password)
-    if (!isValidPassword) {
-      throw new ApiError(403, 'Invalid password')
-    }
-
-    const { token, tokenHash } = await authService.generateToken()
-
-    const session = await authService.createSession(user.id, tokenHash)
-
-    return { token, session, user }
   },
   register: async (dto: RegisterSchema) => {
     const existingUser = await userService.getOneByMail(dto.mail)
@@ -50,46 +56,18 @@ const authService = {
     return { token, session, user }
   },
   authenticate: async (token: string) => {
-    // Get all active sessions
-    const sessions = await sessionRepository.find({
-      where: { expires_at: MoreThan(new Date()) },
+    const tokenHash = authService.hashToken(token)
+    const session = await sessionRepository.findOne({
+      where: { token_hash: tokenHash, expires_at: MoreThan(new Date()) },
       relations: ['user']
     })
-
-    // Find session by verifying token hash
-    let validSession = null
-    for (const session of sessions) {
-      try {
-        const isMatch = await argon2.verify(session.token_hash, token)
-        if (isMatch) {
-          validSession = session
-          break
-        }
-      } catch {
-        // Invalid hash format or verification error
-        continue
-      }
-    }
-
-    if (!validSession) {
-      throw new ApiError(401, 'Invalid session')
-    }
-
-    // Update last activity
-    await sessionRepository.update(validSession.id, {
-      last_activity_at: new Date()
-    })
-
-    return validSession
+    if (!session) throw new ApiError(401, 'Invalid session')
+    await sessionRepository.update(session.id, { last_activity_at: new Date() })
+    return session
   },
   generateToken: async () => {
     const token = crypto.randomBytes(64).toString('hex')
-    const tokenHash = await argon2.hash(token, {
-      type: argon2.argon2id, // Recommended: argon2id
-      memoryCost: 65536, // 64 MB
-      timeCost: 3, // 3 iterations
-      parallelism: 4 // 4 parallel threads
-    })
+    const tokenHash = authService.hashToken(token)
 
     return { token, tokenHash }
   },
@@ -101,7 +79,8 @@ const authService = {
       last_activity_at: new Date()
     })
     return sessionRepository.save(session)
-  }
+  },
+  hashToken: (token: string) => createHash('sha256').update(token).digest('hex')
 }
 
 export default authService

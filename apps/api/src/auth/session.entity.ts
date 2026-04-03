@@ -13,7 +13,7 @@ export class Session {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 512 })
   token_hash!: string
 
   @Column({ type: 'uuid' })

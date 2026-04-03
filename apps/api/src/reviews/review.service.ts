@@ -1,4 +1,5 @@
 import { AppDataSource } from '#config/typeorm-datasource.js'
+import { User } from '#users/user.entity.js'
 import { ApiError } from '#utils/errors.js'
 import { In } from 'typeorm'
 
@@ -110,10 +111,17 @@ const reviewService = {
       .getMany()
   },
 
-  update: async (id: string, data: UpdateReviewSchema) => {
+  update: async (id: string, data: UpdateReviewSchema, user: User) => {
     const review = await reviewRepository.findOne({ where: { id } })
     if (!review) {
-      throw new ApiError(404, 'Review not found')
+      throw new ApiError(404, 'Critique non trouvée')
+    }
+
+    if (review.user_id !== user.id && !user.is_admin) {
+      throw new ApiError(
+        403,
+        "Impossible d'éditer une critique d'un autre utilisateur"
+      )
     }
 
     // tags handling
@@ -155,15 +163,31 @@ const reviewService = {
     return reviewService.getOne(id)
   },
 
-  delete: async (id: string) => {
-    const review = await reviewRepository.findOne({ where: { id } })
-    if (!review) {
-      throw new ApiError(404, 'Review not found')
+  delete: async (id: string, user: User) => {
+    const existing = await reviewService.getOne(id)
+    if (!existing) {
+      throw new ApiError(404, 'Critique non trouvée')
+    }
+    if (existing.user_id !== user.id && !user.is_admin) {
+      throw new ApiError(
+        403,
+        "Impossible d'éditer une critique d'un autre utilisateur"
+      )
     }
     return reviewRepository.delete({ id })
   },
 
   addLike: async (review_id: string, user_id: string) => {
+    const review = await reviewRepository.findOne({ where: { id: review_id } })
+    if (!review) {
+      throw new ApiError(404, 'Critique non trouvée')
+    }
+    const existing = await likeRepository.findOne({
+      where: { review_id, user_id }
+    })
+    if (existing) {
+      throw new ApiError(409, 'Déjà liké')
+    }
     const like = likeRepository.create({ review_id, user_id })
     return likeRepository.save(like)
   },

@@ -19,7 +19,7 @@ export const AppDataSource = new DataSource({
   username: config.db.user,
   password: config.db.password,
   database: config.db.database,
-  synchronize: true,
+  synchronize: config.app.mode === 'development',
   logging: false,
   entities: [
     User,

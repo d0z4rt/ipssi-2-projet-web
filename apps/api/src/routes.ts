@@ -52,7 +52,7 @@ const defaultRoutes: { path: string; route: Handler }[] = [
   {
     path: '/',
     route: (_req, res) => {
-      res.send({
+      res.status(404).send({
         statusCode: 404,
         message: 'Route not found'
       })

@@ -1,7 +1,8 @@
 import type { RequestHandler } from 'express'
 
+import type { GameUserStatusSchema } from './game.schemas.js'
+
 import { ApiError } from '../utils/errors.js'
-import { gameUserStatusSchema } from './game.schemas.js'
 import service from './game.service.js'
 
 type ControllerHandlers = {
@@ -9,7 +10,7 @@ type ControllerHandlers = {
   getOne: RequestHandler
   getStatusSummary: RequestHandler
   getUserStatus: RequestHandler
-  setUserStatus: RequestHandler
+  setUserStatus: RequestHandler<{ id: string }, {} | null, GameUserStatusSchema>
   getAllUserGameStatuses: RequestHandler
 }
 
@@ -73,9 +74,12 @@ const gameController: ControllerHandlers = {
       }
 
       const id = String(req.params.id)
-      const payload = gameUserStatusSchema.parse(req.body)
 
-      const status = await service.setUserStatusByGame(id, req.user.id, payload)
+      const status = await service.setUserStatusByGame(
+        id,
+        req.user.id,
+        req.body
+      )
 
       res.json(status)
     } catch (err) {

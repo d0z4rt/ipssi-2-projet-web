@@ -4,7 +4,8 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
+  Unique
 } from 'typeorm'
 
 import { Game } from './game.entity.js'
@@ -16,14 +17,15 @@ export enum GameUserStatusType {
 }
 
 @Entity('games_users_statuses')
+@Unique(['game_id', 'user_id'])
 export class GameUserStatus {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column({ type: 'uuid', unique: true })
+  @Column({ type: 'uuid' })
   game_id!: string
 
-  @Column({ type: 'uuid', unique: true })
+  @Column({ type: 'uuid' })
   user_id!: string
 
   @Column({ type: 'boolean', default: false })

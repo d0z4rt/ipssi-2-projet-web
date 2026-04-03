@@ -2,19 +2,19 @@ import type { RequestHandler } from 'express'
 
 import { ApiError } from '#utils/errors.js'
 
-import { loginSchema, registerSchema } from './auth.schemas.js'
+import type { LoginSchema, RegisterSchema } from './auth.schemas.js'
+
 import service from './auth.service.js'
 
 type ControllerHandlers = {
-  login: RequestHandler
-  register: RequestHandler
+  login: RequestHandler<{}, {}, LoginSchema>
+  register: RequestHandler<{}, {}, RegisterSchema>
 }
 
 const authController: ControllerHandlers = {
   login: async (req, res, next) => {
     try {
-      const payload = loginSchema.parse(req.body)
-      const { token, session, user } = await service.login(payload)
+      const { token, session, user } = await service.login(req.body)
 
       res.json({
         token,
@@ -34,9 +34,7 @@ const authController: ControllerHandlers = {
 
   register: async (req, res, next) => {
     try {
-      const payload = registerSchema.parse(req.body)
-
-      const { token, session, user } = await service.register(payload)
+      const { token, session, user } = await service.register(req.body)
 
       res.status(201).json({
         token,

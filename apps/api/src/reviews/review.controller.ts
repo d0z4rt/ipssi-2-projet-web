@@ -2,14 +2,18 @@ import type { RequestHandler } from 'express'
 
 import { ApiError } from '#utils/errors.js'
 
-import { createReviewSchema, updateReviewSchema } from './review.schemas.js'
+import type {
+  CreateReviewSchema,
+  UpdateReviewSchema
+} from './review.schemas.js'
+
 import service from './review.service.js'
 
 type ControllerHandlers = {
-  create: RequestHandler
+  create: RequestHandler<{}, {}, CreateReviewSchema>
   getAll: RequestHandler
   getOne: RequestHandler
-  update: RequestHandler
+  update: RequestHandler<{ id: string }, {} | null, UpdateReviewSchema>
   delete: RequestHandler
   addLike: RequestHandler
   removeLike: RequestHandler
@@ -21,8 +25,7 @@ const reviewController: ControllerHandlers = {
       if (!req.user) {
         throw new ApiError(500, 'Cette route nécessite une authentification')
       }
-      const review = createReviewSchema.parse(req.body)
-      const created = await service.create(req.user.id, review)
+      const created = await service.create(req.user.id, req.body)
       res.status(201).json(created)
     } catch (err) {
       next(err)
@@ -56,9 +59,11 @@ const reviewController: ControllerHandlers = {
 
   update: async (req, res, next) => {
     try {
+      if (!req.user) {
+        throw new ApiError(500, 'Cette route nécessite une authentification')
+      }
       const id = String(req.params.id)
-      const review = updateReviewSchema.parse(req.body)
-      const updated = await service.update(id, review)
+      const updated = await service.update(id, req.body, req.user)
       res.json(updated)
     } catch (err) {
       next(err)
@@ -67,8 +72,11 @@ const reviewController: ControllerHandlers = {
 
   delete: async (req, res, next) => {
     try {
+      if (!req.user) {
+        throw new ApiError(500, 'Cette route nécessite une authentification')
+      }
       const id = String(req.params.id)
-      await service.delete(id)
+      await service.delete(id, req.user)
       res.json({ message: 'Critique supprimée' })
     } catch (err) {
       next(err)

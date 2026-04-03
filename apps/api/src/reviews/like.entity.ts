@@ -4,12 +4,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryColumn
+  PrimaryColumn,
+  Unique
 } from 'typeorm'
 
 import { Review } from './review.entity.js'
 
 @Entity('likes')
+@Unique(['review_id', 'user_id'])
 export class Like {
   @PrimaryColumn({ type: 'uuid' })
   review_id!: string
