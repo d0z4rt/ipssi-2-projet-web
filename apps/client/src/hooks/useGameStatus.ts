@@ -38,6 +38,8 @@ export const useGameStatus = (
     const fetchStatus = async () => {
       if (!gameId || !isAuthenticated) {
         setGameStatus(null)
+        setGameFavorite(false)
+        setStatusError('')
         return
       }
 

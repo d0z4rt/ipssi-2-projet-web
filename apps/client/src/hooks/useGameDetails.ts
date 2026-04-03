@@ -10,6 +10,9 @@ export const useGameDetails = (slug: string | undefined) => {
   useEffect(() => {
     const fetchGameData = async () => {
       if (!slug) {
+        setGame(null)
+        setReviews([])
+        setLoading(false)
         return
       }
 

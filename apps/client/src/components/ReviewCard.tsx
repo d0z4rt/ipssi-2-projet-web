@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Heart } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -61,6 +61,10 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
   const gameSlugOrId =
     gameService.getGameSlugById(localReview.gameId) || localReview.gameId
   const reviewUrl = `/games/${encodeURIComponent(gameSlugOrId)}#review-${localReview.id}`
+
+  useEffect(() => {
+    setLocalReview(review)
+  }, [review])
 
   return (
     <motion.div
