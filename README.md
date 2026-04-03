@@ -1,5 +1,7 @@
 # Projet web 2026
 
+![home](./docs/screenshoot.png)
+
 ## Folders
 
 - `.husky` - git hooks
