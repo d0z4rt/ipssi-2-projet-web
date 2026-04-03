@@ -21,6 +21,7 @@ export type Game = {
   steamAppId?: string
   description: string
   genre: string
+  genres: string[]
   platform: string[]
   rating: number
   image: string
@@ -59,25 +60,33 @@ export type GameStats = {
   likeCount: number
 }
 
-export const mapGame = (game: GameResponse, stats?: GameStats): Game => ({
-  id: game.id,
-  slug: game.slug,
-  title: game.name,
-  steamAppId: game.steam_app_id == null ? undefined : String(game.steam_app_id),
-  description: game.description ?? '',
-  genre: game.categories?.[0] ?? 'Unknown',
-  platform: game.platforms ?? [],
-  rating: stats?.rating ?? 0,
-  image: game.cover_image ?? createPlaceholderImage(game.name, 600, 900),
-  bannerImage:
-    game.banner_image ??
-    createPlaceholderImage(`${game.name} banner`, 1600, 900),
-  screenshots: game.screenshots ?? undefined,
-  releaseDate: game.released_at ?? new Date(0).toISOString(),
-  developer: game.developer ?? 'Unknown',
-  reviewCount: stats?.reviewCount,
-  likeCount: stats?.likeCount
-})
+export const mapGame = (game: GameResponse, stats?: GameStats): Game => {
+  const genres = (game.categories ?? [])
+    .map((category) => category?.trim())
+    .filter((category): category is string => Boolean(category))
+
+  return {
+    id: game.id,
+    slug: game.slug,
+    title: game.name,
+    steamAppId:
+      game.steam_app_id == null ? undefined : String(game.steam_app_id),
+    description: game.description ?? '',
+    genre: genres[0] ?? 'Unknown',
+    genres,
+    platform: game.platforms ?? [],
+    rating: stats?.rating ?? 0,
+    image: game.cover_image ?? createPlaceholderImage(game.name, 600, 900),
+    bannerImage:
+      game.banner_image ??
+      createPlaceholderImage(`${game.name} banner`, 1600, 900),
+    screenshots: game.screenshots ?? undefined,
+    releaseDate: game.released_at ?? new Date(0).toISOString(),
+    developer: game.developer ?? 'Unknown',
+    reviewCount: stats?.reviewCount,
+    likeCount: stats?.likeCount
+  }
+}
 
 const updateGameSnapshots = (games: Game[]) => {
   gameSnapshotById = new Map(games.map((game) => [game.id, game]))

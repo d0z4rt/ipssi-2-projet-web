@@ -1,38 +1,192 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Filter, X, Gamepad2 } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { FullPageSpinner } from '../components/FullPageSpinner'
 import { GameCard } from '../components/GameCard'
+import { useAuth } from '../context/AuthContext'
 import { Game, gameService } from '../services/api'
+import { GameUserStatusType } from '../types/games'
+
+type StatusFilterValue = '' | GameUserStatusType | 'favorite'
+type RatingFilterValue =
+  | 'all'
+  | '0_2'
+  | '3_4'
+  | '5_6'
+  | '7_8'
+  | '9_10'
+
+const statusFilterOptions: Array<{
+  value: StatusFilterValue
+  label: string
+}> = [
+  {
+    value: '',
+    label: 'Mes status'
+  },
+  {
+    value: 'want_to_play',
+    label: 'Envie de jouer'
+  },
+  {
+    value: 'playing',
+    label: 'En cours'
+  },
+  {
+    value: 'played',
+    label: 'Termine'
+  },
+  {
+    value: 'favorite',
+    label: 'Favori'
+  }
+]
+
+const ratingFilterOptions: Array<{
+  value: RatingFilterValue
+  label: string
+}> = [
+  {
+    value: 'all',
+    label: 'Note'
+  },
+  {
+    value: '0_2',
+    label: '0-2/10'
+  },
+  {
+    value: '3_4',
+    label: '3-4/10'
+  },
+  {
+    value: '5_6',
+    label: '5-6/10'
+  },
+  {
+    value: '7_8',
+    label: '7-8/10'
+  },
+  {
+    value: '9_10',
+    label: '9-10/10'
+  }
+]
+
+const matchesRatingRange = (
+  rating: number,
+  ratingFilter: RatingFilterValue
+) => {
+  if (ratingFilter === 'all') {
+    return true
+  }
+
+  if (ratingFilter === '0_2') {
+    return rating >= 0 && rating < 3
+  }
+
+  if (ratingFilter === '3_4') {
+    return rating >= 3 && rating < 5
+  }
+
+  if (ratingFilter === '5_6') {
+    return rating >= 5 && rating < 7
+  }
+
+  if (ratingFilter === '7_8') {
+    return rating >= 7 && rating < 9
+  }
+
+  if (ratingFilter === '9_10') {
+    return rating >= 9
+  }
+
+  return false
+}
+
 export const Games: React.FC = () => {
+  const { isAuthenticated } = useAuth()
   const [games, setGames] = useState<Game[]>([])
-  const [filteredGames, setFilteredGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   // Filters state
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState('')
-  const [minRating, setMinRating] = useState(0)
+  const [selectedStatus, setSelectedStatus] =
+    useState<StatusFilterValue>('')
+  const [selectedRatingFilter, setSelectedRatingFilter] =
+    useState<RatingFilterValue>('all')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const genres = [
-    'Action',
-    'RPG',
-    'Adventure',
-    'Strategy',
-    'Sports',
-    'Puzzle',
-    'Shooter'
-  ]
+  const [statusesByGameId, setStatusesByGameId] = useState<
+    Map<string, Array<GameUserStatusType | 'favorite'>>
+  >(new Map())
 
-  const platforms = ['PC', 'PlayStation', 'Xbox', 'Nintendo', 'Mobile']
+  const genres = useMemo(() => {
+    const uniqueGenres = new Set<string>()
+
+    for (const game of games) {
+      const gameGenres = game.genres.length > 0 ? game.genres : [game.genre]
+      for (const genre of gameGenres) {
+        const normalizedGenre = genre.trim()
+        if (normalizedGenre) {
+          uniqueGenres.add(normalizedGenre)
+        }
+      }
+    }
+
+    return Array.from(uniqueGenres).sort((left, right) =>
+      left.localeCompare(right)
+    )
+  }, [games])
+
+  const platforms = useMemo(() => {
+    const uniquePlatforms = new Set<string>()
+
+    for (const game of games) {
+      for (const platform of game.platform) {
+        const normalizedPlatform = platform.trim()
+        if (normalizedPlatform) {
+          uniquePlatforms.add(normalizedPlatform)
+        }
+      }
+    }
+
+    return Array.from(uniquePlatforms).sort((left, right) =>
+      left.localeCompare(right)
+    )
+  }, [games])
+
   useEffect(() => {
     const fetchGames = async () => {
+      setLoading(true)
       try {
         const data = await gameService.getGames()
         setGames(data)
-        setFilteredGames(data)
+
+        if (!isAuthenticated) {
+          setStatusesByGameId(new Map())
+          return
+        }
+
+        try {
+          const gamesWithStatuses = await gameService.getMyGamesWithStatuses()
+          const nextStatusesByGameId = new Map<
+            string,
+            Array<GameUserStatusType | 'favorite'>
+          >()
+
+          for (const entry of gamesWithStatuses) {
+            nextStatusesByGameId.set(entry.game.id, entry.statuses)
+          }
+
+          setStatusesByGameId(nextStatusesByGameId)
+        } catch (error) {
+          setStatusesByGameId(new Map())
+          // oxlint-disable-next-line no-console
+          console.error('Failed to fetch user game statuses', error)
+        }
       } catch (error) {
+        setStatusesByGameId(new Map())
         // oxlint-disable-next-line no-console
         console.error('Failed to fetch games', error)
       } finally {
@@ -40,9 +194,17 @@ export const Games: React.FC = () => {
       }
     }
     void fetchGames()
-  }, [])
+  }, [isAuthenticated])
+
   useEffect(() => {
+    if (!isAuthenticated) {
+      setSelectedStatus('')
+    }
+  }, [isAuthenticated])
+
+  const filteredGames = useMemo(() => {
     let result = games
+
     if (searchTerm) {
       result = result.filter(
         (game) =>
@@ -50,25 +212,55 @@ export const Games: React.FC = () => {
           game.developer.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
+
     if (selectedGenre) {
-      result = result.filter((game) => game.genre === selectedGenre)
+      result = result.filter((game) => {
+        const gameGenres = game.genres.length > 0 ? game.genres : [game.genre]
+        return gameGenres.includes(selectedGenre)
+      })
     }
+
     if (selectedPlatform) {
       result = result.filter((game) => game.platform.includes(selectedPlatform))
     }
-    if (minRating > 0) {
-      result = result.filter((game) => game.rating >= minRating)
+
+    if (selectedStatus) {
+      result = result.filter((game) => {
+        const gameStatuses = statusesByGameId.get(game.id) ?? []
+        return gameStatuses.includes(selectedStatus)
+      })
     }
-    setFilteredGames(result)
-  }, [searchTerm, selectedGenre, selectedPlatform, minRating, games])
+
+    if (selectedRatingFilter !== 'all') {
+      result = result.filter((game) =>
+        matchesRatingRange(game.rating, selectedRatingFilter)
+      )
+    }
+
+    return result
+  }, [
+    games,
+    searchTerm,
+    selectedGenre,
+    selectedPlatform,
+    selectedRatingFilter,
+    selectedStatus,
+    statusesByGameId
+  ])
+
   const clearFilters = () => {
     setSearchTerm('')
     setSelectedGenre('')
     setSelectedPlatform('')
-    setMinRating(0)
+    setSelectedStatus('')
+    setSelectedRatingFilter('all')
   }
   const hasActiveFilters =
-    selectedGenre || selectedPlatform || minRating > 0 || searchTerm
+    selectedGenre ||
+    selectedPlatform ||
+    selectedStatus ||
+    selectedRatingFilter !== 'all' ||
+    searchTerm
   return (
     <div className="pt-24 pb-20 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
@@ -142,16 +334,36 @@ export const Games: React.FC = () => {
             </select>
 
             <select
-              title="Filtrer par note minimale"
-              aria-label="Filtrer par note minimale"
-              className="block w-40 pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-lg bg-darkBg text-gray-300 border"
-              value={minRating}
-              onChange={(e) => setMinRating(Number(e.target.value))}
+              title="Filtrer par statut"
+              aria-label="Filtrer par statut"
+              className="block w-44 pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-lg bg-darkBg text-gray-300 border disabled:opacity-60 disabled:cursor-not-allowed"
+              value={selectedStatus}
+              onChange={(e) =>
+                setSelectedStatus(e.target.value as StatusFilterValue)
+              }
+              disabled={!isAuthenticated}
             >
-              <option value="0">Any Rating</option>
-              <option value="4.5">4.5+ Stars</option>
-              <option value="4">4.0+ Stars</option>
-              <option value="3">3.0+ Stars</option>
+              {statusFilterOptions.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              title="Filtrer par plage de note"
+              aria-label="Filtrer par plage de note"
+              className="block w-40 pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-lg bg-darkBg text-gray-300 border"
+              value={selectedRatingFilter}
+              onChange={(e) =>
+                setSelectedRatingFilter(e.target.value as RatingFilterValue)
+              }
+            >
+              {ratingFilterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
 
             {hasActiveFilters && (
@@ -216,16 +428,36 @@ export const Games: React.FC = () => {
                 </select>
 
                 <select
-                  title="Filtrer mobile par note minimale"
-                  aria-label="Filtrer mobile par note minimale"
-                  className="block w-full pl-3 pr-10 py-3 text-base border-gray-700 rounded-lg bg-darkBg text-gray-300 border"
-                  value={minRating}
-                  onChange={(e) => setMinRating(Number(e.target.value))}
+                  title="Filtrer mobile par statut"
+                  aria-label="Filtrer mobile par statut"
+                  className="block w-full pl-3 pr-10 py-3 text-base border-gray-700 rounded-lg bg-darkBg text-gray-300 border disabled:opacity-60 disabled:cursor-not-allowed"
+                  value={selectedStatus}
+                  onChange={(e) =>
+                    setSelectedStatus(e.target.value as StatusFilterValue)
+                  }
+                  disabled={!isAuthenticated}
                 >
-                  <option value="0">Any Rating</option>
-                  <option value="4.5">4.5+ Stars</option>
-                  <option value="4">4.0+ Stars</option>
-                  <option value="3">3.0+ Stars</option>
+                  {statusFilterOptions.map((option) => (
+                    <option key={`mobile-${option.value || 'all'}`} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  title="Filtrer mobile par plage de note"
+                  aria-label="Filtrer mobile par plage de note"
+                  className="block w-full pl-3 pr-10 py-3 text-base border-gray-700 rounded-lg bg-darkBg text-gray-300 border"
+                  value={selectedRatingFilter}
+                  onChange={(e) =>
+                    setSelectedRatingFilter(e.target.value as RatingFilterValue)
+                  }
+                >
+                  {ratingFilterOptions.map((option) => (
+                    <option key={`mobile-rating-${option.value}`} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
 
                 {hasActiveFilters && (
