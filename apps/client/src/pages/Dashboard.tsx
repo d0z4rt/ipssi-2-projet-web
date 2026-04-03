@@ -286,7 +286,7 @@ export const Dashboard: React.FC = () => {
                 const gameSlug = gameService.getGameSlugById(review.gameId)
                 const targetUrl = gameSlug
                   ? `/games/${encodeURIComponent(gameSlug)}#review-${review.id}`
-                  : `/games/${review.gameId}#review-${review.id}`
+                  : `/games`
 
                 const isEditing = editingReviewId === review.id
                 const isDeleting = isDeletingReviewId === review.id

@@ -350,7 +350,7 @@ export const Admin: React.FC = () => {
                       className="p-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
                     >
                       <Link
-                        to={`/games/${encodeURIComponent(review.gameId)}#review-${review.id}`}
+                        to={`/games/${encodeURIComponent(gameService.getGameSlugById(review.gameId) || '')}#review-${review.id}`}
                         className="group block flex-1 rounded-md px-1 py-1 transition-colors hover:bg-gray-900/50"
                       >
                         <div className="text-white font-medium group-hover:text-blue-400 transition-colors">

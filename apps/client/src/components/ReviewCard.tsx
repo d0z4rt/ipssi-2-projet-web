@@ -58,9 +58,10 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
     }).format(date)
   }
 
-  const gameSlugOrId =
-    gameService.getGameSlugById(localReview.gameId) || localReview.gameId
-  const reviewUrl = `/games/${encodeURIComponent(gameSlugOrId)}#review-${localReview.id}`
+  const gameSlug = gameService.getGameSlugById(localReview.gameId)
+  const reviewUrl = gameSlug
+    ? `/games/${encodeURIComponent(gameSlug)}#review-${localReview.id}`
+    : `/games`
 
   useEffect(() => {
     setLocalReview(review)
@@ -91,7 +92,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
             <div className="w-10 h-14 rounded bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700" />
           )}
           <Link
-            to={`/games/${gameService.getGameSlugById(localReview.gameId) || localReview.gameId}`}
+            to={`/games/${encodeURIComponent(gameService.getGameSlugById(review.gameId) || '')}`}
             className="font-medium text-white hover:text-blue-400 transition-colors"
           >
             {localReview.gameTitle}
