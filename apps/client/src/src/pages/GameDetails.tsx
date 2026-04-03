@@ -21,7 +21,7 @@ type StatusButtonConfig = {
   icon: React.ComponentType<{ className?: string }>
 }
 
-type ReviewSortOption = 'recommended' | 'latest' | 'top_rated'
+type ReviewSortOption = 'most_liked' | 'latest' | 'rating_desc'
 
 const STATUS_BUTTONS: StatusButtonConfig[] = [
   {
@@ -116,7 +116,7 @@ export const GameDetails: React.FC = () => {
   const [reviewRating, setReviewRating] = useState(7)
   const [reviewContent, setReviewContent] = useState('')
   const [reviewTags, setReviewTags] = useState('')
-  const [reviewSort, setReviewSort] = useState<ReviewSortOption>('recommended')
+  const [reviewSort, setReviewSort] = useState<ReviewSortOption>('most_liked')
   const [gameStatuses, setGameStatuses] = useState<GameUserStatus[]>([])
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(false)
   const [statusSummary, setStatusSummary] = useState<GameStatusSummary>(
@@ -244,9 +244,12 @@ export const GameDetails: React.FC = () => {
       )
     }
 
-    if (reviewSort === 'top_rated') {
+    if (reviewSort === 'rating_desc') {
       return nextReviews.sort(
-        (left, right) => right.rating - left.rating || right.likes - left.likes
+        (left, right) =>
+          right.rating - left.rating ||
+          new Date(right.createdAt).getTime() -
+            new Date(left.createdAt).getTime()
       )
     }
 
@@ -828,9 +831,9 @@ export const GameDetails: React.FC = () => {
                   }
                   className="bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded px-3 py-1.5 focus:outline-none focus:border-gray-500"
                 >
-                  <option value="recommended">Recommandées</option>
+                  <option value="most_liked">Plus likées</option>
                   <option value="latest">Plus récentes</option>
-                  <option value="top_rated">Mieux notées</option>
+                  <option value="rating_desc">Note déposée (10 → 0)</option>
                 </select>
               </div>
 
