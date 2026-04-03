@@ -5,9 +5,16 @@ export type ReviewResponse = {
   rating: number | null
   user_id: string
   game_id: string
-  likes: number
+  likes?: number | LikeResponse[] | null
   created_at: string
-  tags: string[]
+  tags?: string[]
+  reviews_to_tags?:
+    | {
+        tag?: {
+          name: string
+        } | null
+      }[]
+    | null
 }
 
 export type CreateReviewRequest = {

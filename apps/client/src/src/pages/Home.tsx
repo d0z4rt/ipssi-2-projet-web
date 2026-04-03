@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
-import { ChevronRight, ChevronLeft, ExternalLink } from 'lucide-react'
-import React, { useEffect, useState, useRef } from 'react'
+import { ExternalLink } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { Carousel } from '../components/Carousel'
+import { FullPageSpinner } from '../components/FullPageSpinner'
 import { GameCard } from '../components/GameCard'
 import { ReviewCard } from '../components/ReviewCard'
 import {
@@ -13,28 +15,6 @@ import {
   reviewService
 } from '../services/api'
 
-const steamHeaderByGameId: Record<string, string> = {
-  '1': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg?t=1767883716',
-  '2': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/48a2fcbda8565bb45025e98fd8ebde8a7203f6a0/header.jpg?t=1773079016',
-  '3': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ad9240e088f953a84aee814034c50a6a92bf4516/header.jpg?t=1768303991',
-  '4': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg?t=1759502961',
-  '5': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/e9047d8ec47ae3d94bb8b464fb0fc9e9972b4ac7/header.jpg?t=1769690377',
-  '6': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/3c3489495136b26b34f8a9543c7f5645b99d388c/header.jpg?t=1770338567',
-  '7': 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/header.jpg?t=1758127023',
-  '8': '/CrimsonDesert.png'
-}
-
-const steamStoreByGameId: Record<string, string> = {
-  '1': 'https://store.steampowered.com/app/1245620',
-  '2': 'https://store.steampowered.com/app/1086940',
-  '3': 'https://store.steampowered.com/app/292030',
-  '4': 'https://store.steampowered.com/app/1174180',
-  '5': 'https://store.steampowered.com/app/1091500',
-  '6': 'https://store.steampowered.com/app/367520',
-  '7': 'https://store.steampowered.com/app/1145360',
-  '8': 'https://crimsondesert.pearlabyss.com/'
-}
-
 const HOME_GAMES_SECTION_LIMIT = 12
 
 export const Home: React.FC = () => {
@@ -42,23 +22,15 @@ export const Home: React.FC = () => {
   const [latestReleases, setLatestReleases] = useState<Game[]>([])
   const [popularReviews, setPopularReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
-  const trendingRef = useRef<HTMLDivElement>(null)
-  const releasesRef = useRef<HTMLDivElement>(null)
-  const reviewsRef = useRef<HTMLDivElement>(null)
 
   const featuredGame = latestReleases[0] || trendingGames[0]
   const featuredBanner =
-    (featuredGame && steamHeaderByGameId[featuredGame.id]) ||
-    featuredGame?.bannerImage ||
-    featuredGame?.image ||
-    '/CrimsonDesert.png'
+    featuredGame?.bannerImage || featuredGame?.image || '/CrimsonDesert.png'
   const featuredSteamFromAppId = featuredGame?.steamAppId
     ? `https://store.steampowered.com/app/${featuredGame.steamAppId}`
     : null
   const featuredSteamUrl =
-    featuredSteamFromAppId ||
-    (featuredGame && steamStoreByGameId[featuredGame.id]) ||
-    'https://store.steampowered.com'
+    featuredSteamFromAppId || 'https://store.steampowered.com'
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,43 +64,8 @@ export const Home: React.FC = () => {
     }
     fetchData()
   }, [])
-  const scroll = (
-    ref: React.RefObject<HTMLDivElement>,
-    direction: 'left' | 'right'
-  ) => {
-    if (ref.current) {
-      const { scrollLeft, clientWidth } = ref.current
-      const firstItem = ref.current.querySelector<HTMLElement>(
-        '[data-carousel-item="true"]'
-      )
-
-      let scrollStep = clientWidth
-
-      if (firstItem) {
-        const styles = window.getComputedStyle(ref.current)
-        const gapValue = Number.parseFloat(
-          styles.gap || styles.columnGap || '0'
-        )
-        const itemWidth =
-          firstItem.offsetWidth + (Number.isNaN(gapValue) ? 0 : gapValue)
-        const visibleItems = Math.max(1, Math.floor(clientWidth / itemWidth))
-        scrollStep = itemWidth * visibleItems
-      }
-
-      const scrollTo =
-        direction === 'left' ? scrollLeft - scrollStep : scrollLeft + scrollStep
-      ref.current.scrollTo({
-        left: scrollTo,
-        behavior: 'smooth'
-      })
-    }
-  }
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-darkBg">
-        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
+    return <FullPageSpinner />
   }
   return (
     <div className="pt-16 min-h-screen bg-darkBg">
@@ -192,145 +129,58 @@ export const Home: React.FC = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 pb-20">
-        {/* Trending Section */}
-        <section>
-          <div className="flex items-center justify-between mb-6 border-b border-gray-800 pb-2">
-            <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-              Tops Jeux Vidéo
-            </h2>
-            <Link
-              to="/games"
-              className="text-sm text-blue-400 hover:underline flex items-center"
-            >
-              Voir plus <ChevronRight className="w-4 h-4 ml-1" />
-            </Link>
-          </div>
-
-          <div className="relative group/carousel">
-            <button
-              onClick={() => scroll(trendingRef, 'left')}
-              title="Voir les jeux précédents"
-              aria-label="Voir les jeux précédents"
-              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
+        <Carousel
+          title="Tops Jeux Vidéo"
+          seeMoreLink="/games"
+          previousLabel="Voir les jeux précédents"
+          nextLabel="Voir les jeux suivants"
+          trackClassName="flex gap-3 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-hide"
+        >
+          {trendingGames.map((game) => (
             <div
-              ref={trendingRef}
-              className="flex gap-3 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-hide"
+              key={game.id}
+              data-carousel-item="true"
+              className="snap-start shrink-0 w-[170px] sm:w-[180px] lg:w-[190px] xl:w-[200px] p-1"
             >
-              {trendingGames.map((game) => (
-                <div
-                  key={game.id}
-                  data-carousel-item="true"
-                  className="snap-start shrink-0 w-[170px] sm:w-[180px] lg:w-[190px] xl:w-[200px] p-1"
-                >
-                  <GameCard game={game} />
-                </div>
-              ))}
+              <GameCard game={game} />
             </div>
+          ))}
+        </Carousel>
 
-            <button
-              onClick={() => scroll(trendingRef, 'right')}
-              title="Voir les jeux suivants"
-              aria-label="Voir les jeux suivants"
-              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </section>
-
-        {/* Latest Releases Section */}
-        <section>
-          <div className="flex items-center justify-between mb-6 border-b border-gray-800 pb-2">
-            <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-              Dernières Sorties
-            </h2>
-            <Link
-              to="/games"
-              className="text-sm text-blue-400 hover:underline flex items-center"
-            >
-              Voir plus <ChevronRight className="w-4 h-4 ml-1" />
-            </Link>
-          </div>
-
-          <div className="relative group/carousel">
-            <button
-              onClick={() => scroll(releasesRef, 'left')}
-              title="Voir les sorties précédentes"
-              aria-label="Voir les sorties précédentes"
-              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
+        <Carousel
+          title="Dernières Sorties"
+          seeMoreLink="/games"
+          previousLabel="Voir les sorties précédentes"
+          nextLabel="Voir les sorties suivantes"
+          trackClassName="flex gap-3 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-hide"
+        >
+          {latestReleases.map((game) => (
             <div
-              ref={releasesRef}
-              className="flex gap-3 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-hide"
+              key={game.id}
+              data-carousel-item="true"
+              className="snap-start shrink-0 w-[170px] sm:w-[180px] lg:w-[190px] xl:w-[200px] p-1"
             >
-              {latestReleases.map((game) => (
-                <div
-                  key={game.id}
-                  data-carousel-item="true"
-                  className="snap-start shrink-0 w-[170px] sm:w-[180px] lg:w-[190px] xl:w-[200px] p-1"
-                >
-                  <GameCard game={game} />
-                </div>
-              ))}
+              <GameCard game={game} />
             </div>
+          ))}
+        </Carousel>
 
-            <button
-              onClick={() => scroll(releasesRef, 'right')}
-              title="Voir les sorties suivantes"
-              aria-label="Voir les sorties suivantes"
-              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </section>
-
-        {/* Popular Reviews Section */}
-        <section>
-          <div className="flex items-center justify-between mb-6 border-b border-gray-800 pb-2">
-            <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-              Critiques Populaires
-            </h2>
-          </div>
-
-          <div className="relative group/carousel">
-            <button
-              onClick={() => scroll(reviewsRef, 'left')}
-              title="Voir les critiques précédentes"
-              aria-label="Voir les critiques précédentes"
-              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
+        <Carousel
+          title="Critiques Populaires"
+          previousLabel="Voir les critiques précédentes"
+          nextLabel="Voir les critiques suivantes"
+          trackClassName="flex gap-6 overflow-x-auto pb-4 snap-x scrollbar-hide"
+        >
+          {popularReviews.map((review) => (
             <div
-              ref={reviewsRef}
-              className="flex gap-6 overflow-x-auto pb-4 snap-x scrollbar-hide"
+              key={review.id}
+              data-carousel-item="true"
+              className="snap-start w-[400px] shrink-0"
             >
-              {popularReviews.map((review) => (
-                <div key={review.id} className="snap-start w-[400px] shrink-0">
-                  <ReviewCard review={review} showGameInfo={true} />
-                </div>
-              ))}
+              <ReviewCard review={review} showGameInfo={true} />
             </div>
-
-            <button
-              onClick={() => scroll(reviewsRef, 'right')}
-              title="Voir les critiques suivantes"
-              aria-label="Voir les critiques suivantes"
-              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-gray-900/80 border border-gray-700 text-white p-2 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-gray-800"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </section>
+          ))}
+        </Carousel>
       </div>
     </div>
   )

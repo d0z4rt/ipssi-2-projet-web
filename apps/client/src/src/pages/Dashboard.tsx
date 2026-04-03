@@ -14,6 +14,12 @@ import {
 import React, { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 
+import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { FullPageSpinner } from '../components/FullPageSpinner'
+import { ReviewEditRow } from '../components/ReviewEditRow'
+import { StatCard } from '../components/StatCard'
+import { TabBar } from '../components/TabBar'
 import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL, getGameSlugById } from '../services/api'
 import {
@@ -23,17 +29,16 @@ import {
   gameService,
   reviewService
 } from '../services/api'
-
 type DashboardTab = 'reviews' | 'games'
 
-const statusLabelMap: Record<GameUserStatus, string> = {
+const statusLabelMap: Record<GameUserStatus | 'favorite', string> = {
   played: 'Fini',
   want_to_play: "Envie d'y jouer",
   playing: 'En cours',
   favorite: 'Coup de coeur'
 }
 
-const statusBadgeClassMap: Record<GameUserStatus, string> = {
+const statusBadgeClassMap: Record<GameUserStatus | 'favorite', string> = {
   played: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
   want_to_play: 'border-blue-500/40 bg-blue-500/10 text-blue-300',
   playing: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
@@ -41,7 +46,7 @@ const statusBadgeClassMap: Record<GameUserStatus, string> = {
 }
 
 const statusIconMap: Record<
-  GameUserStatus,
+  GameUserStatus | 'favorite',
   React.ComponentType<{ className?: string }>
 > = {
   played: Check,
@@ -175,11 +180,7 @@ export const Dashboard: React.FC = () => {
   }
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-darkBg">
-        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
+    return <FullPageSpinner />
   }
 
   if (!isAuthenticated) {
@@ -229,87 +230,41 @@ export const Dashboard: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-        <div className="bg-cardBg border border-gray-800 rounded-xl p-6 flex items-center gap-4">
-          <div className="p-4 bg-blue-500/10 rounded-lg text-blue-400">
-            <MessageSquare className="w-8 h-8" />
-          </div>
-          <div>
-            <p className="text-gray-400 text-sm font-medium">Total Reviews</p>
-            <p className="text-3xl font-orbitron font-bold text-white">
-              {userReviews.length}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-cardBg border border-gray-800 rounded-xl p-6 flex items-center gap-4">
-          <div className="p-4 bg-red-500/10 rounded-lg text-red-400">
-            <Heart className="w-8 h-8" />
-          </div>
-          <div>
-            <p className="text-gray-400 text-sm font-medium">Likes Received</p>
-            <p className="text-3xl font-orbitron font-bold text-white">
-              {totalLikes}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-cardBg border border-gray-800 rounded-xl p-6 flex items-center gap-4">
-          <div className="p-4 bg-yellow-500/10 rounded-lg text-yellow-400">
-            <Star className="w-8 h-8" />
-          </div>
-          <div>
-            <p className="text-gray-400 text-sm font-medium">
-              Avg Rating Given (/10)
-            </p>
-            <p className="text-3xl font-orbitron font-bold text-white">
-              {avgRating}/10
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-cardBg border border-gray-800 rounded-xl p-6 flex items-center gap-4">
-          <div className="p-4 bg-emerald-500/10 rounded-lg text-emerald-400">
-            <Gamepad2 className="w-8 h-8" />
-          </div>
-          <div>
-            <p className="text-gray-400 text-sm font-medium">Jeux suivis</p>
-            <p className="text-3xl font-orbitron font-bold text-white">
-              {totalMarkedGames}
-            </p>
-          </div>
-        </div>
+        <StatCard
+          icon={MessageSquare}
+          label="Total Reviews"
+          value={userReviews.length}
+          accentClassName="bg-blue-500/10 text-blue-400"
+        />
+        <StatCard
+          icon={Heart}
+          label="Likes Received"
+          value={totalLikes}
+          accentClassName="bg-red-500/10 text-red-400"
+        />
+        <StatCard
+          icon={Star}
+          label="Avg Rating Given (/10)"
+          value={`${avgRating}/10`}
+          accentClassName="bg-yellow-500/10 text-yellow-400"
+        />
+        <StatCard
+          icon={Gamepad2}
+          label="Jeux suivis"
+          value={totalMarkedGames}
+          accentClassName="bg-emerald-500/10 text-emerald-400"
+        />
       </div>
 
-      <div className="mb-8 flex border-b border-gray-800">
-        <button
-          type="button"
-          onClick={() => setActiveTab('reviews')}
-          className={`px-6 py-3 text-sm font-medium transition-colors relative ${
-            activeTab === 'reviews'
-              ? 'text-accent'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Mes critiques
-          {activeTab === 'reviews' && (
-            <div className="absolute bottom-0 left-0 h-0.5 w-full bg-accent"></div>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('games')}
-          className={`px-6 py-3 text-sm font-medium transition-colors relative ${
-            activeTab === 'games'
-              ? 'text-accent'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Jeux
-          {activeTab === 'games' && (
-            <div className="absolute bottom-0 left-0 h-0.5 w-full bg-accent"></div>
-          )}
-        </button>
-      </div>
+      <TabBar
+        className="mb-8"
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { value: 'reviews', label: 'Mes critiques' },
+          { value: 'games', label: 'Jeux' }
+        ]}
+      />
 
       {activeTab === 'reviews' && (
         <div>
@@ -318,9 +273,7 @@ export const Dashboard: React.FC = () => {
           </h2>
 
           {actionError && (
-            <div className="mb-4 rounded border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              {actionError}
-            </div>
+            <ErrorBanner message={actionError} className="mb-4" />
           )}
 
           {loading ? (
@@ -365,48 +318,16 @@ export const Dashboard: React.FC = () => {
                       </div>
 
                       {isEditing ? (
-                        <div className="space-y-3">
-                          <input
-                            type="text"
-                            value={editTitle}
-                            onChange={(event) =>
-                              setEditTitle(event.target.value)
-                            }
-                            className="w-full rounded-lg border border-gray-700 bg-darkBg px-3 py-2 text-white focus:outline-none focus:border-accent"
-                            placeholder="Titre"
-                          />
-                          <textarea
-                            value={editContent}
-                            onChange={(event) =>
-                              setEditContent(event.target.value)
-                            }
-                            rows={4}
-                            className="w-full rounded-lg border border-gray-700 bg-darkBg px-3 py-2 text-white focus:outline-none focus:border-accent"
-                            placeholder="Contenu"
-                          />
-                          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            <input
-                              title="Note"
-                              type="number"
-                              min={0}
-                              max={10}
-                              value={editRating}
-                              onChange={(event) =>
-                                setEditRating(Number(event.target.value))
-                              }
-                              className="w-full rounded-lg border border-gray-700 bg-darkBg px-3 py-2 text-white focus:outline-none focus:border-accent"
-                            />
-                            <input
-                              type="text"
-                              value={editTags}
-                              onChange={(event) =>
-                                setEditTags(event.target.value)
-                              }
-                              className="w-full rounded-lg border border-gray-700 bg-darkBg px-3 py-2 text-white focus:outline-none focus:border-accent"
-                              placeholder="Tags (comma separated)"
-                            />
-                          </div>
-                        </div>
+                        <ReviewEditRow
+                          title={editTitle}
+                          content={editContent}
+                          rating={editRating}
+                          tags={editTags}
+                          onTitleChange={setEditTitle}
+                          onContentChange={setEditContent}
+                          onRatingChange={setEditRating}
+                          onTagsChange={setEditTags}
+                        />
                       ) : (
                         <>
                           <p className="text-gray-300 text-sm">
@@ -497,9 +418,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {gamesError && (
-            <div className="mx-4 mt-4 rounded border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              {gamesError}
-            </div>
+            <ErrorBanner message={gamesError} className="mx-4 mt-4" />
           )}
 
           {loading ? (
@@ -594,38 +513,14 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {reviewIdToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-xl border border-gray-800 bg-cardBg p-5 shadow-2xl">
-            <h3 className="text-lg font-semibold text-white">
-              Confirmer la suppression
-            </h3>
-            <p className="mt-2 text-sm text-gray-300">
-              Cette action supprimera definitivement la critique.
-            </p>
-            <div className="mt-5 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setReviewIdToDelete(null)}
-                disabled={isDeletingReviewId === reviewIdToDelete}
-                className="rounded-md border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-50"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleDeleteReview()}
-                disabled={isDeletingReviewId === reviewIdToDelete}
-                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
-              >
-                {isDeletingReviewId === reviewIdToDelete
-                  ? 'Suppression...'
-                  : 'Confirmer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDeleteModal
+        isOpen={Boolean(reviewIdToDelete)}
+        isDeleting={Boolean(
+          reviewIdToDelete && isDeletingReviewId === reviewIdToDelete
+        )}
+        onCancel={() => setReviewIdToDelete(null)}
+        onConfirm={() => void handleDeleteReview()}
+      />
     </div>
   )
 }

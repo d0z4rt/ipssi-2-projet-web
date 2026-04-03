@@ -3,7 +3,7 @@ import { ReviewResponse } from './reviews'
 export type GameResponse = {
   id: string
   slug: string
-  steam_app_id: number
+  steam_app_id?: number | string | null
   name: string
   description: string | null
   cover_image: string | null
@@ -12,9 +12,9 @@ export type GameResponse = {
   platforms: string[] | null
   developer: string | null
   released_at: string | null
-  reviews: ReviewResponse[] | null
-  created_at: string
-  categories: string[]
+  reviews?: ReviewResponse[] | null
+  created_at?: string
+  categories?: string[] | null
 }
 
 export type GameStatusesSummaryResponse = {
@@ -33,7 +33,7 @@ export type GameUserStatusResponse = {
   game_id: string
   user_id: string
   is_favorite: boolean
-  status: GameUserStatusType | null
+  status: GameUserStatusType
 }
 
 export type GameUserStatusRequest = {

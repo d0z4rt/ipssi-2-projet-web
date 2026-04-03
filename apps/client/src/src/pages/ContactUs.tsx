@@ -2,6 +2,7 @@ import { AlertCircle, CheckCircle2, Loader2, Mail, Send } from 'lucide-react'
 import React, { useState } from 'react'
 
 import { ContactRequest, contactService } from '../services/api'
+import { formFieldClassName } from '../styles/form'
 
 type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error'
 
@@ -129,7 +130,7 @@ export const ContactUs: React.FC = () => {
                   maxLength={80}
                   value={form.firstName}
                   onChange={handleChange}
-                  className="block w-full px-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldClassName}
                   placeholder="Alex"
                 />
               </div>
@@ -149,7 +150,7 @@ export const ContactUs: React.FC = () => {
                   maxLength={80}
                   value={form.lastName}
                   onChange={handleChange}
-                  className="block w-full px-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldClassName}
                   placeholder="Martin"
                 />
               </div>
@@ -170,7 +171,7 @@ export const ContactUs: React.FC = () => {
                 maxLength={160}
                 value={form.email}
                 onChange={handleChange}
-                className="block w-full px-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                className={formFieldClassName}
                 placeholder="alex@example.com"
               />
             </div>
@@ -189,7 +190,7 @@ export const ContactUs: React.FC = () => {
                   required
                   value={form.category}
                   onChange={handleCategoryChange}
-                  className="block w-full px-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-gray-200 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldClassName}
                 >
                   <option value="support">Support</option>
                   <option value="bug-report">Bug report</option>
@@ -213,7 +214,7 @@ export const ContactUs: React.FC = () => {
                   maxLength={120}
                   value={form.subject}
                   onChange={handleChange}
-                  className="block w-full px-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldClassName}
                   placeholder="I need help with my review"
                 />
               </div>
@@ -235,7 +236,7 @@ export const ContactUs: React.FC = () => {
                 maxLength={2000}
                 value={form.message}
                 onChange={handleChange}
-                className="block w-full px-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                className={formFieldClassName}
                 placeholder="Please describe your request with as much detail as possible."
               />
               <p className="text-xs text-gray-500 mt-2">

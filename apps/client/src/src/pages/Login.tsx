@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
+import { formFieldWithIconClassName } from '../styles/form'
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -82,7 +83,7 @@ export const Login: React.FC = () => {
                 <input
                   id="login-email"
                   type="email"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldWithIconClassName}
                   placeholder="gamer@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -112,7 +113,7 @@ export const Login: React.FC = () => {
                 <input
                   id="login-password"
                   type="password"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-darkBg text-white placeholder-gray-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className={formFieldWithIconClassName}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
