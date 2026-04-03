@@ -14,6 +14,7 @@ import { useGameStatus } from '../hooks/useGameStatus'
 import { API_BASE_URL, Review } from '../services/api'
 
 type ReviewSortOption = 'most_liked' | 'latest' | 'rating_desc'
+const REVIEW_FORM_ANCHOR_ID = 'review-form'
 
 export const GameDetails: React.FC = () => {
   const { isAuthenticated, user } = useAuth()
@@ -149,7 +150,19 @@ export const GameDetails: React.FC = () => {
       setReviewError('Only curator or admin accounts can publish reviews.')
       return
     }
+
     setIsReviewFormOpen(true)
+    window.requestAnimationFrame(() => {
+      const target = document.getElementById(REVIEW_FORM_ANCHOR_ID)
+      if (!target) {
+        return
+      }
+
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    })
   }
 
   return (
@@ -299,25 +312,27 @@ export const GameDetails: React.FC = () => {
                 <ErrorBanner message={reviewError} className="mb-4" />
               )}
 
-              <ReviewForm
-                gameId={game.id}
-                isOpen={isReviewFormOpen}
-                isSubmitting={isSubmittingReview}
-                onSubmittingChange={setIsSubmittingReview}
-                onCreated={(createdReview: Review) => {
-                  setReviews((currentReviews) => [
-                    createdReview,
-                    ...currentReviews
-                  ])
-                  setIsReviewFormOpen(false)
-                  setReviewError('')
-                  setStatusError('')
-                }}
-                onCancel={() => {
-                  setIsReviewFormOpen(false)
-                  setReviewError('')
-                }}
-              />
+              <div id={REVIEW_FORM_ANCHOR_ID} className="scroll-mt-28">
+                <ReviewForm
+                  gameId={game.id}
+                  isOpen={isReviewFormOpen}
+                  isSubmitting={isSubmittingReview}
+                  onSubmittingChange={setIsSubmittingReview}
+                  onCreated={(createdReview: Review) => {
+                    setReviews((currentReviews) => [
+                      createdReview,
+                      ...currentReviews
+                    ])
+                    setIsReviewFormOpen(false)
+                    setReviewError('')
+                    setStatusError('')
+                  }}
+                  onCancel={() => {
+                    setIsReviewFormOpen(false)
+                    setReviewError('')
+                  }}
+                />
+              </div>
 
               <div className="mb-6">
                 <select
