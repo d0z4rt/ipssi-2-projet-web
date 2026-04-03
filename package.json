@@ -5,6 +5,7 @@
     "dev": "pnpm --parallel dev",
     "build": "pnpm --parallel build",
     "start": "pnpm --parallel start",
+    "docker": "docker compose -f docker-compose.yml up  -d --build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "check": "oxlint && oxfmt",
     "format": "oxfmt",
@@ -18,7 +19,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "oxfmt": "^0.23.0",
-    "oxlint": "^1.38.0"
+    "oxlint": "^1.38.0",
+    "oxlint-tsgolint": "^0.19.0"
   },
   "lint-staged": {
     "**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,astro,svelte}": "oxlint",

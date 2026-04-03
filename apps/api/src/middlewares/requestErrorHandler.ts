@@ -1,0 +1,36 @@
+import type { ErrorRequestHandler } from 'express'
+
+import z, { ZodError } from 'zod'
+
+import { ApiError } from '../utils/errors.js'
+
+const requestErrorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  if (err instanceof ZodError) {
+    res.status(400).json({
+      error: 'Validation error',
+      details: z.flattenError(err)
+    })
+    return
+  }
+
+  if (err instanceof ApiError) {
+    res.status(err.statusCode).json({
+      statusCode: err.statusCode,
+      error: err.message || 'Server internal error'
+    })
+    return
+  }
+
+  if (err instanceof Error) {
+    res.status(500).json({
+      error: err.message || 'Server internal error'
+    })
+    return
+  }
+
+  res.status(500).json({
+    error: 'Server internal error'
+  })
+}
+
+export default requestErrorHandler
