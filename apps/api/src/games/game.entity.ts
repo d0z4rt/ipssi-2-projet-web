@@ -77,7 +77,7 @@ export class Game {
    * Returns a JSON representation of the game, omitting the games_to_categories field
    */
   toJSON() {
-    const { games_to_categories: _, ...rest } = this
+    const { games_to_categories: _, user_statuses: __, ...rest } = this
     return {
       ...rest,
       categories: this.categories

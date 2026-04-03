@@ -20,7 +20,10 @@ const gameService = {
       relations: [
         'games_to_categories',
         'games_to_categories.category',
-        'reviews'
+        'reviews',
+        'reviews.likes',
+        'reviews.reviews_to_tags',
+        'reviews.reviews_to_tags.tag'
       ]
     })
   },
