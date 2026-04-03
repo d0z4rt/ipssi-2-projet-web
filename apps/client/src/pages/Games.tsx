@@ -23,7 +23,7 @@ const statusFilterOptions: Array<{
 }> = [
   {
     value: '',
-    label: 'Tous les statuts'
+    label: 'Mes status'
   },
   {
     value: 'want_to_play',
@@ -49,7 +49,7 @@ const ratingFilterOptions: Array<{
 }> = [
   {
     value: 'all',
-    label: 'Toutes les notes'
+    label: 'Note'
   },
   {
     value: '0_2',
