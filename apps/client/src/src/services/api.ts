@@ -51,7 +51,7 @@ export type GameStatusSummary = Record<GameUserStatus | 'favorite', number>
 
 export interface UserGameWithStatuses {
   game: Game
-  statuses: GameUserStatus[]
+  statuses: Array<GameUserStatus | 'favorite'>
 }
 
 export interface Review {
@@ -123,9 +123,15 @@ export type ApiGameStatusesResponse = Omit<GameUserStatusResponse, 'status'> & {
 
 export type ApiGameStatusSummaryResponse = GameStatusesSummaryResponse
 
+export type ApiUserGameStatusEntry = {
+  game: ApiGame
+  status: GameUserStatus | null
+  is_favorite: boolean
+}
+
 export type ApiUserGameWithStatuses = {
   game: ApiGame
-  statuses: GameUserStatus[]
+  statuses: Array<GameUserStatus | 'favorite'>
 }
 
 export type Catalog = {
@@ -650,7 +656,33 @@ export const gameService = {
         }
       )
 
-      return response.data.map((entry) => ({
+      const groupedByGameId = new Map<
+        string,
+        {
+          game: ApiGame
+          statuses: Array<GameUserStatus | 'favorite'>
+        }
+      >()
+
+      for (const entry of response.data as unknown as ApiUserGameStatusEntry[]) {
+        const current = groupedByGameId.get(entry.game.id)
+        const nextStatuses = current?.statuses ?? []
+
+        if (entry.status && !nextStatuses.includes(entry.status)) {
+          nextStatuses.push(entry.status)
+        }
+
+        if (entry.is_favorite && !nextStatuses.includes('favorite')) {
+          nextStatuses.push('favorite')
+        }
+
+        groupedByGameId.set(entry.game.id, {
+          game: entry.game,
+          statuses: nextStatuses
+        })
+      }
+
+      return Array.from(groupedByGameId.values()).map((entry) => ({
         game: mapGame(entry.game),
         statuses: entry.statuses
       }))
