@@ -5,15 +5,17 @@ import { Link } from 'react-router-dom'
 
 import {
   API_BASE_URL,
+  gameService,
   Review,
-  getGameSlugById,
   reviewService
 } from '../services/api'
-interface ReviewCardProps {
+
+type ReviewCardProps = {
   review: Review
   onLikeUpdate?: (updatedReview: Review) => void
   showGameInfo?: boolean
 }
+
 export const ReviewCard: React.FC<ReviewCardProps> = ({
   review,
   onLikeUpdate,
@@ -56,7 +58,8 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
     }).format(date)
   }
 
-  const gameSlugOrId = getGameSlugById(localReview.gameId) || localReview.gameId
+  const gameSlugOrId =
+    gameService.getGameSlugById(localReview.gameId) || localReview.gameId
   const reviewUrl = `/games/${encodeURIComponent(gameSlugOrId)}#review-${localReview.id}`
 
   return (
@@ -84,7 +87,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
             <div className="w-10 h-14 rounded bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700" />
           )}
           <Link
-            to={`/games/${getGameSlugById(localReview.gameId) || localReview.gameId}`}
+            to={`/games/${gameService.getGameSlugById(localReview.gameId) || localReview.gameId}`}
             className="font-medium text-white hover:text-blue-400 transition-colors"
           >
             {localReview.gameTitle}
@@ -161,10 +164,10 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
               whileTap={{
                 scale: 0.9
               }}
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                handleLike()
+                await handleLike()
               }}
               disabled={isLiking}
               className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${localReview.liked ? 'text-red-400' : 'text-gray-400 hover:text-red-400'}`}

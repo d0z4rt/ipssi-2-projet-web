@@ -19,13 +19,13 @@ import { TabBar } from '../components/TabBar'
 import { useAuth } from '../context/AuthContext'
 import {
   adminService,
-  AdminUser,
   gameService,
   Game,
   reviewService,
   Review,
   API_BASE_URL
 } from '../services/api'
+import { UserResponse } from '../types/users'
 
 const REVIEWS_PER_PAGE = 20
 
@@ -41,7 +41,7 @@ export const Admin: React.FC = () => {
   })
   const [games, setGames] = useState<Game[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
-  const [users, setUsers] = useState<AdminUser[]>([])
+  const [users, setUsers] = useState<UserResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [isDeletingReviewId, setIsDeletingReviewId] = useState<string | null>(
     null
@@ -113,7 +113,7 @@ export const Admin: React.FC = () => {
       }
     }
     if (user?.role === 'admin') {
-      fetchAdminData()
+      void fetchAdminData()
     }
   }, [user])
 

@@ -19,7 +19,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "oxfmt": "^0.23.0",
-    "oxlint": "^1.38.0"
+    "oxlint": "^1.38.0",
+    "oxlint-tsgolint": "^0.19.0"
   },
   "lint-staged": {
     "**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,astro,svelte}": "oxlint",

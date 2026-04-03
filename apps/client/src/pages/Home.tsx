@@ -62,7 +62,7 @@ export const Home: React.FC = () => {
         setLoading(false)
       }
     }
-    fetchData()
+    void fetchData()
   }, [])
   if (loading) {
     return <FullPageSpinner />

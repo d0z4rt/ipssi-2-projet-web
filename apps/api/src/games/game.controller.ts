@@ -45,7 +45,7 @@ const gameController: ControllerHandlers = {
       const id = String(req.params.id)
       const summary = await service.getStatusSummaryByGame(id)
 
-      res.json({ summary })
+      res.json(summary)
     } catch (err) {
       next(err)
     }

@@ -67,7 +67,7 @@ export class Review {
     return {
       ...rest,
       tags: this.tags.map((t) => t.name),
-      likes: this.likes?.length || 0
+      like_count: this.likes?.length || 0
     }
   }
 }

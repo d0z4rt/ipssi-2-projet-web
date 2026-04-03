@@ -54,4 +54,4 @@ export const categoriesSeed = Array.from(new Set(gamesSeed.flatMap(g => g.catego
   )
 }
 
-main().catch(console.error)
+await main().catch(console.error)

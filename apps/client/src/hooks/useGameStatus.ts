@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { GameStatusSummary, GameUserStatus, gameService } from '../services/api'
+import { gameService } from '../services/api'
+import { GameStatusesSummaryResponse, GameUserStatusType } from '../types/games'
 
 const createStatusLoadingState = (): Record<
-  GameUserStatus | 'favorite',
+  GameUserStatusType | 'favorite',
   boolean
 > => ({
   played: false,
@@ -12,7 +13,7 @@ const createStatusLoadingState = (): Record<
   favorite: false
 })
 
-const createEmptyStatusSummary = (): GameStatusSummary => ({
+const createEmptyStatusSummary = (): GameStatusesSummaryResponse => ({
   played: 0,
   want_to_play: 0,
   playing: 0,
@@ -23,15 +24,14 @@ export const useGameStatus = (
   gameId: string | undefined,
   isAuthenticated: boolean
 ) => {
-  const [gameStatus, setGameStatus] = useState<GameUserStatus | null>(null)
+  const [gameStatus, setGameStatus] = useState<GameUserStatusType | null>(null)
   const [gameFavorite, setGameFavorite] = useState<boolean>(false)
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(false)
-  const [statusSummary, setStatusSummary] = useState<GameStatusSummary>(
-    createEmptyStatusSummary
-  )
+  const [statusSummary, setStatusSummary] =
+    useState<GameStatusesSummaryResponse>(createEmptyStatusSummary)
   const [statusError, setStatusError] = useState('')
   const [statusLoadingByType, setStatusLoadingByType] = useState<
-    Record<GameUserStatus | 'favorite', boolean>
+    Record<GameUserStatusType | 'favorite', boolean>
   >(createStatusLoadingState)
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export const useGameStatus = (
     }
   }, [gameId])
 
-  const toggleStatus = async (status: GameUserStatus | 'favorite') => {
+  const toggleStatus = async (status: GameUserStatusType | 'favorite') => {
     if (!gameId) {
       return
     }
@@ -120,7 +120,7 @@ export const useGameStatus = (
         setGameStatus(res.status)
         setGameFavorite(res.is_favorite)
       } else {
-        let newStatus: GameUserStatus | null = status
+        let newStatus: GameUserStatusType | null = status
         if (gameStatus === status) {
           setGameStatus(null)
           newStatus = null

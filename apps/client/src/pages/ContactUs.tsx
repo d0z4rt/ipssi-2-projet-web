@@ -93,6 +93,7 @@ export const ContactUs: React.FC = () => {
       await contactService.submit(payload)
       setStatus('success')
     } catch (error) {
+      // oxlint-disable-next-line no-console
       console.error('Failed to submit contact form', error)
       setStatus('error')
       setErrorMessage(

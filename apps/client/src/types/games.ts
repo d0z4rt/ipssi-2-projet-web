@@ -18,18 +18,17 @@ export type GameResponse = {
 }
 
 export type GameStatusesSummaryResponse = {
-  summary: {
-    played: number
-    want_to_play: number
-    playing: number
-    favorite: number
-  }
+  played: number
+  want_to_play: number
+  playing: number
+  favorite: number
 }
 
 export type GameUserStatusType = 'played' | 'want_to_play' | 'playing'
 
 export type GameUserStatusResponse = {
   id: string
+  game: GameResponse
   game_id: string
   user_id: string
   is_favorite: boolean

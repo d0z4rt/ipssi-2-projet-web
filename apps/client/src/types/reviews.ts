@@ -5,7 +5,8 @@ export type ReviewResponse = {
   rating: number | null
   user_id: string
   game_id: string
-  likes?: number | LikeResponse[] | null
+  likes?: LikeResponse[] | null
+  like_count: number
   created_at: string
   tags?: string[]
   reviews_to_tags?:

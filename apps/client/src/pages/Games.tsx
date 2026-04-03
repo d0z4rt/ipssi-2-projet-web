@@ -33,12 +33,13 @@ export const Games: React.FC = () => {
         setGames(data)
         setFilteredGames(data)
       } catch (error) {
+        // oxlint-disable-next-line no-console
         console.error('Failed to fetch games', error)
       } finally {
         setLoading(false)
       }
     }
-    fetchGames()
+    void fetchGames()
   }, [])
   useEffect(() => {
     let result = games

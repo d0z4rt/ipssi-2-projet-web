@@ -2,9 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 
 import { authService, type AuthUser } from '../services/api'
 
-export interface User extends AuthUser {}
-interface AuthContextType {
-  user: User | null
+type AuthContextType = {
+  user: AuthUser | null
   isAuthenticated: boolean
   loading: boolean
   login: (email: string, password: string) => Promise<void>
@@ -16,11 +15,13 @@ interface AuthContextType {
   ) => Promise<void>
   logout: () => void
 }
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
 export const AuthProvider: React.FC<{
   children: React.ReactNode
 }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

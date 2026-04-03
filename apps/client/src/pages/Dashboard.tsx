@@ -21,24 +21,24 @@ import { ReviewEditRow } from '../components/ReviewEditRow'
 import { StatCard } from '../components/StatCard'
 import { TabBar } from '../components/TabBar'
 import { useAuth } from '../context/AuthContext'
-import { API_BASE_URL, getGameSlugById } from '../services/api'
+import { API_BASE_URL } from '../services/api'
 import {
-  GameUserStatus,
   Review,
   UserGameWithStatuses,
   gameService,
   reviewService
 } from '../services/api'
+import { GameUserStatusType } from '../types/games'
 type DashboardTab = 'reviews' | 'games'
 
-const statusLabelMap: Record<GameUserStatus | 'favorite', string> = {
+const statusLabelMap: Record<GameUserStatusType | 'favorite', string> = {
   played: 'Fini',
   want_to_play: "Envie d'y jouer",
   playing: 'En cours',
   favorite: 'Coup de coeur'
 }
 
-const statusBadgeClassMap: Record<GameUserStatus | 'favorite', string> = {
+const statusBadgeClassMap: Record<GameUserStatusType | 'favorite', string> = {
   played: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
   want_to_play: 'border-blue-500/40 bg-blue-500/10 text-blue-300',
   playing: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
@@ -46,7 +46,7 @@ const statusBadgeClassMap: Record<GameUserStatus | 'favorite', string> = {
 }
 
 const statusIconMap: Record<
-  GameUserStatus | 'favorite',
+  GameUserStatusType | 'favorite',
   React.ComponentType<{ className?: string }>
 > = {
   played: Check,
@@ -283,7 +283,7 @@ export const Dashboard: React.FC = () => {
           ) : userReviews.length > 0 ? (
             <div className="space-y-4">
               {userReviews.map((review) => {
-                const gameSlug = getGameSlugById(review.gameId)
+                const gameSlug = gameService.getGameSlugById(review.gameId)
                 const targetUrl = gameSlug
                   ? `/games/${encodeURIComponent(gameSlug)}#review-${review.id}`
                   : `/games/${review.gameId}#review-${review.id}`

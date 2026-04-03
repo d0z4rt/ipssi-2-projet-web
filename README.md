@@ -7,6 +7,7 @@
 - `apps` - application code
   - `client` - react frontend
   - `api` - express backend
+  - `scrap-steam` - helper to scrap a list of game from steam
 
 ## Installation
 

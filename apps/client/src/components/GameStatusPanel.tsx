@@ -1,11 +1,11 @@
 import { Bookmark, Check, Heart, Play } from 'lucide-react'
 import React from 'react'
 
-import { GameUserStatus } from '../services/api'
+import { GameUserStatusType } from '../types/games'
 import { ErrorBanner } from './ErrorBanner'
 
 type StatusButtonConfig = {
-  status: GameUserStatus | 'favorite'
+  status: GameUserStatusType | 'favorite'
   label: string
   icon: React.ComponentType<{ className?: string }>
 }
@@ -38,10 +38,10 @@ type GameStatusPanelProps = {
   onOpenReviewForm: () => void
   statusError: string
   isLoadingStatuses: boolean
-  statusLoadingByType: Record<GameUserStatus | 'favorite', boolean>
-  gameStatus: GameUserStatus | null
+  statusLoadingByType: Record<GameUserStatusType | 'favorite', boolean>
+  gameStatus: GameUserStatusType | null
   gameFavorite: boolean
-  onToggleStatus: (status: GameUserStatus | 'favorite') => Promise<void>
+  onToggleStatus: (status: GameUserStatusType | 'favorite') => Promise<void>
 }
 
 export const GameStatusPanel: React.FC<GameStatusPanelProps> = ({

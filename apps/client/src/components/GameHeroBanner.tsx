@@ -1,14 +1,15 @@
 import { Bookmark, Check, ExternalLink, Heart, Play } from 'lucide-react'
 import React from 'react'
 
-import { API_BASE_URL, Game, GameStatusSummary } from '../services/api'
+import { API_BASE_URL, Game } from '../services/api'
+import { GameStatusesSummaryResponse } from '../types/games'
 import { getRatingColor } from './GameCard'
 
 type GameHeroBannerProps = {
   game: Game
   releaseYear: number | 'N/A'
   steamUrl: string | null
-  statusSummary: GameStatusSummary
+  statusSummary: GameStatusesSummaryResponse
   onImageFallback: (event: React.SyntheticEvent<HTMLImageElement>) => void
 }
 

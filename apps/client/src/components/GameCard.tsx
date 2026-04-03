@@ -3,14 +3,17 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 import { API_BASE_URL, Game } from '../services/api'
-interface GameCardProps {
+
+type GameCardProps = {
   game: Game
 }
+
 export const getRatingColor = (rating: number) => {
   if (rating >= 7) return 'text-ratingGood'
   if (rating >= 5) return 'text-ratingMid'
   return 'text-ratingBad'
 }
+
 export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const hasImage = Boolean(game.image)
   return (

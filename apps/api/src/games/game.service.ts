@@ -37,7 +37,8 @@ const gameService = {
       where: {
         game_id: gameId,
         user_id: userId
-      }
+      },
+      relations: ['game']
     })
 
     return status
